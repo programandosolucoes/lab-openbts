@@ -1,0 +1,871 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+    <title>PySDR: A Guide to SDR and DSP using Python</title>
+  
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script defer="defer" type="module" src="_static/js/PhasedArrayVisualizer/js/index.js"></script>
+    <script defer="defer" type="module" src="_static/js/PhasedArrayVisualizer/js/index-scenes.js"></script>
+    <script src="_static/js/beamforming_slider_app.js"></script>
+    <script src="_static/js/FFT.js"></script>
+    <script src="_static/js/cyclostationary_app.js"></script>
+    <script src="_static/js/homepage_app.js"></script>
+    <script src="_static/js/tdoa.js"></script>
+    <script src="_static/js/eye_diagram_app.js"></script>
+    <script src="_static/js/sin_plus_cos_app.js"></script>
+    <script src="_static/js/sidebar_groups.js"></script>
+    <link rel="shortcut icon" href="_static/myicon.png"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="1. Introduction" href="content/intro.html" />
+
+ 
+<link rel="stylesheet" href="_static/custom.css" type="text/css" />
+
+
+<meta name="description" content="PySDR is a free online textbook (not a Python library!) that provides a gentle introduction to wireless communications and software-defined radio (SDR) using an abundance of diagrams, animations, and Python code examples." />
+<meta property="og:title" content="PySDR: A Guide to SDR and DSP using Python" />
+<meta property="og:description" content="PySDR is a free online textbook (not a Python library!) that provides a gentle introduction to wireless communications and software-defined radio (SDR) using an abundance of diagrams, animations, and Python code examples." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://pysdr.org/index.html" />
+<meta property="og:image" content="https://pysdr.org/_static/logo.png" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:description" content="PySDR is a free online textbook (not a Python library!) that provides a gentle introduction to wireless communications and software-defined radio (SDR) using an abundance of diagrams, animations, and Python code examples." />
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-TGRQK1JJYD"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-TGRQK1JJYD');
+</script> 
+
+<div id="topBanner" class="modal">
+  <div class="modal-content">
+    <div class="modal-header" style="background-color: rgb(255, 240, 129); text-align:center;">
+      <i>🎺 Announcement from Marc 🎺</i>
+      <br>
+      <!--
+      I'm leading a new education-oriented open-source project called <a target="_blank" href="https://iqengine.org">IQEngine</a>!<br>It's a web-based SDR toolkit for analyzing, processing, and sharing RF recordings.  Checkout out our <a target="_blank" href="https://github.com/IQEngine/IQEngine">GitHub</a> and <a target="_blank" href="https://discord.gg/k7C8kp3b76">Discord</a>
+      //-->
+      PySDR now has a Patreon! <a target="_blank" href="https://www.patreon.com/pysdr">Support the project</a> and have your name added to the textbook on the bottom left of every page, plus get priority when emailing questions!
+      <div class="closeButton">
+        <span style="font-size:30px; position:absolute; top:0px; right:5px; cursor:pointer; ">&times;</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  var banner = document.getElementById("topBanner");
+  var closeButton = document.getElementsByClassName("closeButton")[0];
+  // Close banner if they have already clicked the close button in the past
+  if (localStorage.getItem('pysdrvisited2')){
+    banner.style.display = "none";
+  }
+  // When they click the close button
+  closeButton.onclick = function() {
+    banner.style.display = "none";
+    localStorage.setItem('pysdrvisited2', true);
+  }
+</script>
+
+<div style="float: right; padding-bottom: 0;">
+  <!-- GitHub Logo //-->
+  <a href="https://github.com/777arc/PySDR" target="_blank" style="text-decoration:none;">
+    <svg height="16px" width="18px">
+        <path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"></path>
+    </svg>
+  </a>
+
+  <!-- Patreon orange (old) Logo //-->
+  <a href="https://www.patreon.com/PySDR" target="_blank" style="text-decoration:none;">
+    <svg width="18px" height="18px" viewBox="0 0 550 550">
+      <g transform="translate(-78.58618,-210.44369)">
+        <path style="fill:#ff5900;fill-opacity:1;stroke:none" d="m 349.30488,210.44369 c -149.51545,0 -270.7187,121.20325 -270.7187,270.71875 l 0,270.4687 259.375,0 c 3.7608,0.155 7.5448,0.25 11.3437,0.25 149.5155,0 270.7188,-121.2032 270.7188,-270.7187 0,-149.5155 -121.2033,-270.71875 -270.7188,-270.71875 z" />
+        <path style="fill:#ffffff;fill-opacity:1;stroke:none" d="m 349.30493,273.28744 c -114.80003,0 -207.875,93.07494 -207.875,207.875 l 0,123.90625 0,83.75 0,62.8125 83.1875,0 0,-270.25 c 0,-68.64109 55.64016,-124.3125 124.28125,-124.3125 68.64109,0 124.28125,55.67141 124.28125,124.3125 0,68.64109 -55.64016,124.28125 -124.28125,124.28125 -25.09566,0 -48.463,-7.45836 -68,-20.25 l 0,89.34375 c 13.09042,8.05513 42.97659,13.74429 78.03125,14.03125 110.32856,-5.03362 198.25,-96.05383 198.25,-207.625 0,-114.80006 -93.07493,-207.875 -207.875,-207.875 z m -8.71875,415.53125 c 2.8876,0.1191 5.80191,0.21875 8.71875,0.21875 3.07049,0 6.11821,-0.087 9.15625,-0.21875 l -17.875,0 z" />
+      </g>
+    </svg>
+  </a>
+
+  &nbsp;|&nbsp;
+
+  <a style="text-decoration:none" href="https://pysdr.org/index.html"><img src="https://pysdr.org/_static/us.svg" alt="English" width="20">English</a>&nbsp;&nbsp;
+  <a style="text-decoration:none" href="https://pysdr.org/nl/index-nl.html"><img src="https://pysdr.org/_static/nl.svg" alt="Dutch" width="20">Dutch</a>&nbsp;&nbsp;
+  <a style="text-decoration:none" href="https://pysdr.org/fr/index-fr.html"><img src="https://pysdr.org/_static/fr.svg" alt="French" width="20">French</a>&nbsp;&nbsp;
+  <a style="text-decoration:none" href="https://pysdr.org/ukraine/index-ukraine.html"><img src="https://pysdr.org/_static/ukrain.svg" alt="Ukrainian" width="20">Ukrainian</a>&nbsp;&nbsp;
+  <a style="text-decoration:none" href="https://pysdr.org/zh/index-zh.html"><img src="https://pysdr.org/_static/cn.svg" alt="Chinese" width="20">Chinese</a>&nbsp;&nbsp;
+  <a style="text-decoration:none" href="https://pysdr.org/es/index-es.html"><img src="https://pysdr.org/_static/es.svg" alt="Spanish" width="20">Spanish</a>&nbsp;&nbsp;
+  <a style="text-decoration:none" href="https://pysdr.org/ja/index-ja.html"><img src="https://pysdr.org/_static/ja.svg" alt="Japanese" width="20">Japanese</a>
+</div>
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><p class="logo">
+  <a href="#">
+    <img class="logo" src="_static/logo.svg" alt="Logo" />
+    <h1 class="logo logo-name">PySDR: A Guide to SDR and DSP using Python</h1>
+  </a>
+</p>
+
+<p class="blurb">By <a href="https://pysdr.org/content/about_author.html">Dr. Marc Lichtman</a> - marc@pysdr.org</p><ul>
+<li class="toctree-l1"><a class="reference internal" href="content/intro.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="content/frequency_domain.html">2. Frequency Domain</a></li>
+<li class="toctree-l1"><a class="reference internal" href="content/sampling.html">3. IQ Sampling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="content/digital_modulation.html">4. Digital Modulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="content/pluto.html">5. PlutoSDR in Python</a></li>
+<li class="toctree-l1"><a class="reference internal" href="content/usrp.html">6. USRP in Python</a></li>
+<li class="toctree-l1"><a class="reference internal" href="content/bladerf.html">7. BladeRF in Python</a></li>
+<li class="toctree-l1"><a class="reference internal" href="content/rtlsdr.html">8. RTL-SDR in Python</a></li>
+<li class="toctree-l1"><a class="reference internal" href="content/hackrf.html">9. HackRF One in Python</a></li>
+<li class="toctree-l1"><a class="reference internal" href="content/noise.html">10. Noise and Random Variables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="content/filters.html">11. Filters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="content/link_budgets.html">12. Link Budgets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="content/channel_coding.html">13. Channel Coding</a></li>
+<li class="toctree-l1"><a class="reference internal" href="content/iq_files.html">14. IQ Files and SigMF</a></li>
+<li class="toctree-l1"><a class="reference internal" href="content/multipath_fading.html">15. Multipath Fading</a></li>
+<li class="toctree-l1"><a class="reference internal" href="content/pulse_shaping.html">16. Pulse Shaping</a></li>
+<li class="toctree-l1"><a class="reference internal" href="content/sync.html">17. Synchronization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="content/rds.html">18. End-to-End Example with RDS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="content/doa.html">19. Beamforming &amp; DOA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="content/2d_beamforming.html">20. 2D Beamforming</a></li>
+<li class="toctree-l1"><a class="reference internal" href="content/phaser.html">21. Hands-on with Phaser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="content/cyclostationary.html">22. Cyclostationary Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="content/pyqt.html">23. Real-Time GUIs with PyQt</a></li>
+<li class="toctree-l1"><a class="reference internal" href="content/detection.html">24. Detection using Correlation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="content/fpv_video.html">25. Analog FPV Video Signals</a></li>
+<li class="toctree-l1"><a class="reference internal" href="content/tdoa.html">26. TDOA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="content/sdr_frameworks.html">27. SDR Frameworks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="content/about_author.html">28. About the Author</a></li>
+</ul>
+
+<hr />
+<div role="search">
+    <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+        <input type="text" style="font-size:120%" name="q" placeholder="Search PySDR" aria-label="Search PySDR" />
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<ul style="margin-top:4px">
+    <li class="toctree-l1">
+        <a href="https://github.com/777arc/PySDR" target="_blank" style="text-decoration:none;">
+            <svg height="15px" width="18px">
+                <path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"></path>
+            </svg>
+        </a>
+        <a target="_blank" href="https://github.com/777arc/PySDR">GitHub Link</a>
+    </li>
+    <li class="toctree-l1"><a target="_blank" href="https://coddy.tech/playground/matplotlib"><img width="15px" height="12px" src="https://pysdr.org/_static/python.svg"> Online Python Console</a></li>
+    <li class="toctree-l1"><a target="_blank" href="https://www.paypal.com/donate/?hosted_button_id=FH3LQCJRUVPWL"><img width="15px" height="12px" src="https://pysdr.org/_static/donate.svg"> One-time Donation</a></li>
+</ul><div style="font-size: 120%; margin-top: 5px;">A big thanks to all PySDR<br><a href="https://www.patreon.com/PySDR" target="_blank">Patreon</a> supporters:</div><div style="font-size: 120%; margin-bottom: 80px; margin-top: 0px;">&#9900; Karel<br />&#9900; Frank Zosso, HB9FXQ<br />&#9900; Don Bailey<br />&#9900; VJ<br />&#9900; Frank O'Donnell<br />&#9900; Jon Kraft<br />&#9900; Nick H<br />&#9900; Andrey Limonchenko<br />&#9900; David Lindsey<br />&#9900; Miguel A. Hijar<br />&#9900; Dmytro Tokar<br />&#9900; Al Grant <img width="15px" height="12px" src="https://pysdr.org/_static/kiwi-bird.svg"><br />&#9900; Manuel Rösel<br />&#9900; Benjaminas Visockis<br />&#9900; Sage Trudeau<br />&#9900; Zafar Iqbal<br />&#9900; Jan Hamal Dvořák<br />&#9900; Morriel Kasher<br />&#9900; Joe S.<br />&#9900; Amirreza<br />&#9900; MH<br />&#9900; Ian Finley<br />&#9900; Harris Tidwell<br />&#9900; Thomas Külpmann<br />&#9900; Serhii Pedko (UR7HOC)<br />&#9900; <a href="https://www.youtube.com/@RECESSIM" style="border-bottom: 0;" target="_blank">RECESSIM <img width="15px" height="12px" src="https://pysdr.org/_static/hash.svg"></a><br />&#9900; Rafael Sepulveda<br />&#9900; Don<br />&#9900; Geoffrey Feldman<br />&#9900; Rhodri Morgan M0RHO<br />&#9900; <a href="https://dsp-coach.com" style="border-bottom: 0;" target="_blank">Dan Boschen</a><br />&#9900; Marcin Anforowicz<br />&#9900; Matt N3PAY<br />&#9900; Umberto Corponi<br />&#9900; Gabriele Maria Bellavia<br />&#9900; Thomas Kent<br />&#9900; xXfilmersbringwaxXx<br />&#9900; DA<br />&#9900; Paul K. Young<br />&#9900; Arsen Hutsal<br /><div style="margin-top: 5px;">and organization-level supporters:</div><img width="12px" height="12px" src="https://pysdr.org/_static/adi.svg"> <a style="border-bottom: 0;" target="_blank" href="https://www.analog.com/en/design-center/reference-designs/circuits-from-the-lab/cn0566.html">Analog Devices, Inc.</a><br /></div>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          <a href="content/intro.html" title="Next document"><span class="section-number">1. </span>Introduction</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <h1 style="text-align: center">PySDR: A Guide to SDR and DSP using Python</h1>
+
+<p style="text-align: center">
+  by
+  <a class="reference internal" href="content/about_author.html#author-chapter">
+    <span class="std std-ref">Dr. Marc Lichtman</span>
+  </a>
+  -
+  <a class="reference external" href="mailto:marc&#37;&#52;&#48;pysdr&#46;org" rel="noopener noreferrer" target="_blank">
+    pysdr<span>&#64;</span>vt<span>&#46;</span>edu
+  </a>
+</p>
+
+<h4 style="line-height: 1.4">
+  Welcome to PySDR, a free online textbook (not a Python library!) that provides a gentle introduction to wireless communications and software-defined
+  radio (SDR) using an abundance of diagrams, animations, and Python code examples. From FFTs to filters to digital modulation to receiving and
+  transmitting from SDRs in Python, PySDR has you covered!
+</h4>
+
+<h4 style="line-height: 1.4">
+  The goal of PySDR is to increase accessibility to topics traditionally covered in a math-intensive manner and within a relatively small set of
+  universities. All content used to generate PySDR is open source, and can be found
+  <a class="reference external" href="https://github.com/777arc/PySDR" rel="noopener noreferrer" target="_blank">here</a>.
+</h4>
+
+<h4>
+  See
+  <a class="reference internal" href="content/intro.html#intro-chapter"><span class="std std-ref">Chapter 1: Introduction</span></a>
+  for the textbook's purpose and target audience.
+</h4>
+
+<h4 style="line-height: 1.4">
+  As of Aug 2026, PySDR now has example GNU Radio flowgraphs scattered throughout, allowing the reader to play around with DSP concepts in a web-based GNU Radio
+  environment, thanks to the
+  <a class="reference external" href="https://gnuradioworld.com" rel="noopener noreferrer" target="_blank">GNU Radio World</a>
+  project!  An example is provided below.  If you open GNU Radio World and start playing around, try out the example signal recordings that can be used as a File Source and streamed to your browser; there
+  are dozens of example signals you can play with, most with example flowgraphs to go along with them.
+</h4>
+
+<!-- The list of every GNU Radio World example in the textbook gets inserted here by gnuradioworld_examples.py, which
+     produces _templates/homepage_generated.html (the file index.rst actually includes).  Edit this file, not that one. -->
+<!-- GNU RADIO WORLD EXAMPLE LIST -->
+<details style="margin: 10px 0 20px 0;">
+  <summary style="cursor: pointer;"><h4 style="display: inline;">Expand for a list of all GNU Radio World examples in PySDR</h4></summary>
+  <ul style="margin-top: 10px;">
+    <li><a class="reference external" href="https://gnuradioworld.com/#example=analog/frequency_domain_windowing" rel="noopener noreferrer" target="_blank">Windowing, FFT Size, and the Waterfall</a> <span style="color: #777;">(Frequency Domain)</span></li>
+    <li><a class="reference external" href="https://gnuradioworld.com/#example=analog/sampling_aliasing" rel="noopener noreferrer" target="_blank">Nyquist Sampling and Aliasing</a> <span style="color: #777;">(IQ Sampling)</span></li>
+    <li><a class="reference external" href="https://gnuradioworld.com/#example=filter/sampling_dc_spike_offset_tuning" rel="noopener noreferrer" target="_blank">DC Spike and Offset Tuning</a> <span style="color: #777;">(IQ Sampling)</span></li>
+    <li><a class="reference external" href="https://gnuradioworld.com/#example=digital/digital_modulation_constellations" rel="noopener noreferrer" target="_blank">BPSK vs QPSK vs 16-QAM</a> <span style="color: #777;">(Digital Modulation)</span></li>
+    <li><a class="reference external" href="https://gnuradioworld.com/#example=digital/digital_modulation_fsk" rel="noopener noreferrer" target="_blank">4-FSK and Frequency Spacing</a> <span style="color: #777;">(Digital Modulation)</span></li>
+    <li><a class="reference external" href="https://gnuradioworld.com/#example=analog/noise_awgn_psd" rel="noopener noreferrer" target="_blank">AWGN in Time, Frequency, and Distribution</a> <span style="color: #777;">(Noise and Random Variables)</span></li>
+    <li><a class="reference external" href="https://gnuradioworld.com/#example=filter/filters_lowpass_interference" rel="noopener noreferrer" target="_blank">Low-Pass Filtering Out an Interferer</a> <span style="color: #777;">(Filters)</span></li>
+    <li><a class="reference external" href="https://gnuradioworld.com/#example=channels/multipath_fading_flat_vs_selective" rel="noopener noreferrer" target="_blank">Flat vs Frequency-Selective Fading</a> <span style="color: #777;">(Multipath Fading)</span></li>
+    <li><a class="reference external" href="https://gnuradioworld.com/#example=filter/pulse_shaping_rrc_eye" rel="noopener noreferrer" target="_blank">RRC Pulse Shaping, Eye Diagram, and Sampling Instant</a> <span style="color: #777;">(Pulse Shaping)</span></li>
+    <li><a class="reference external" href="https://gnuradioworld.com/#example=digital/synchronization_bpsk_recovery" rel="noopener noreferrer" target="_blank">BPSK Timing and Frequency Synchronization</a> <span style="color: #777;">(Synchronization)</span></li>
+    <li><a class="reference external" href="https://gnuradioworld.com/#example=audio/fm_receiver_recording" rel="noopener noreferrer" target="_blank">FM Receiver from Recording</a> <span style="color: #777;">(SDR Frameworks)</span></li>
+  </ul>
+</details>
+
+<!-- ════════ GNU RADIO WORLD EMBED ════════ -->
+<iframe
+          src="https://gnuradioworld.com/?embed=1&zoom=60%"
+          title="GNU Radio World"
+          loading="lazy"
+          allow="cross-origin-isolated; fullscreen"
+          style="display:block; width:100%; aspect-ratio:21/9; min-height:345px; border:0; margin:18px auto 26px;"
+        ></iframe>
+<!-- ════════ /GNU RADIO WORLD EMBED ════════ -->
+
+<br />
+<details>
+<summary><h4 style="display: inline;">Expand for full table of contents</h4></summary><div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="content/intro.html">1. Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="content/intro.html#purpose-and-target-audience">Purpose and Target Audience</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/intro.html#why-python">Why Python?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/intro.html#contributing">Contributing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/intro.html#acknowledgements">Acknowledgements</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="content/frequency_domain.html">2. Frequency Domain</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="content/frequency_domain.html#fourier-series">Fourier Series</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/frequency_domain.html#time-frequency-pairs">Time-Frequency Pairs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/frequency_domain.html#fourier-transform">Fourier Transform</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/frequency_domain.html#time-frequency-properties">Time-Frequency Properties</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/frequency_domain.html#fast-fourier-transform-fft">Fast Fourier Transform (FFT)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/frequency_domain.html#negative-frequencies">Negative Frequencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/frequency_domain.html#order-in-time-doesn-t-matter">Order in Time Doesn’t Matter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/frequency_domain.html#fft-in-python">FFT in Python</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/frequency_domain.html#windowing">Windowing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/frequency_domain.html#fft-sizing">FFT Sizing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/frequency_domain.html#spectrogram-waterfall">Spectrogram/Waterfall</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/frequency_domain.html#fft-implementation">FFT Implementation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/frequency_domain.html#boxcar-and-sinc">Boxcar and Sinc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/frequency_domain.html#external-resources-and-example-python-code">External Resources and Example Python Code</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="content/sampling.html">3. IQ Sampling</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="content/sampling.html#sampling-basics">Sampling Basics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/sampling.html#nyquist-sampling">Nyquist Sampling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/sampling.html#quadrature-sampling">Quadrature Sampling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/sampling.html#complex-numbers">Complex Numbers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/sampling.html#complex-numbers-in-ffts">Complex Numbers in FFTs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/sampling.html#receiver-side">Receiver Side</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/sampling.html#carrier-and-downconversion">Carrier and Downconversion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/sampling.html#receiver-architectures">Receiver Architectures</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="content/sampling.html#sampling-at-four-times-the-if">Sampling at Four Times the IF</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="content/sampling.html#baseband-and-bandpass-signals">Baseband and Bandpass Signals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/sampling.html#dc-spike-and-offset-tuning">DC Spike and Offset Tuning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/sampling.html#sampling-using-our-sdr">Sampling Using our SDR</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/sampling.html#calculating-average-power">Calculating Average Power</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/sampling.html#calculating-power-spectral-density">Calculating Power Spectral Density</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/sampling.html#further-reading">Further Reading</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="content/digital_modulation.html">4. Digital Modulation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="content/digital_modulation.html#symbols">Symbols</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/digital_modulation.html#wireless-symbols">Wireless Symbols</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/digital_modulation.html#amplitude-shift-keying-ask">Amplitude Shift Keying (ASK)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/digital_modulation.html#phase-shift-keying-psk">Phase Shift Keying (PSK)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/digital_modulation.html#iq-plots-constellations">IQ Plots/Constellations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/digital_modulation.html#quadrature-amplitude-modulation-qam">Quadrature Amplitude Modulation (QAM)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/digital_modulation.html#frequency-shift-keying-fsk">Frequency Shift Keying (FSK)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/digital_modulation.html#differential-coding">Differential Coding</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/digital_modulation.html#python-example">Python Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/digital_modulation.html#further-reading">Further Reading</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/digital_modulation.html#external-resources-and-example-python-code">External Resources and Example Python Code</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="content/pluto.html">5. PlutoSDR in Python</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="content/pluto.html#overview-of-the-plutosdr">Overview of the PlutoSDR</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/pluto.html#software-drivers-install">Software/Drivers Install</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="content/pluto.html#setting-up-vm">Setting up VM</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/pluto.html#connecting-plutosdr">Connecting PlutoSDR</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/pluto.html#installing-plutosdr-driver">Installing PlutoSDR Driver</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/pluto.html#testing-plutosdr-drivers">Testing PlutoSDR Drivers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/pluto.html#changing-pluto-s-ip-address">Changing Pluto’s IP Address</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/pluto.html#hack-plutosdr-to-increase-rf-range">“Hack” PlutoSDR to Increase RF Range</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="content/pluto.html#receiving">Receiving</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="content/pluto.html#receive-gain">Receive Gain</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="content/pluto.html#transmitting">Transmitting</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="content/pluto.html#transmitting-samples-on-repeat">Transmitting Samples on Repeat</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/pluto.html#transmitting-over-the-air-legally">Transmitting Over the Air Legally</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="content/pluto.html#transmitting-and-receiving-simultaneously">Transmitting and Receiving Simultaneously</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/pluto.html#maia-sdr-and-iqengine">Maia SDR and IQEngine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/pluto.html#reference-api">Reference API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/pluto.html#python-exercises">Python Exercises</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="content/pluto.html#exercise-1-determine-your-usb-throughput">Exercise 1: Determine Your USB Throughput</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/pluto.html#exercise-2-create-a-spectrogram-waterfall">Exercise 2: Create a Spectrogram/Waterfall</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="content/pluto.html#pluto">Pluto+</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/pluto.html#antsdr-e200">AntSDR E200</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/pluto.html#antsdr-e310">AntSDR E310</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="content/usrp.html">6. USRP in Python</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="content/usrp.html#software-drivers-install">Software/Drivers Install</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="content/usrp.html#setting-up-an-ubuntu-22-vm">Setting Up an Ubuntu 22 VM</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/usrp.html#installing-uhd-and-python-api">Installing UHD and Python API</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/usrp.html#testing-uhd-drivers-and-python-api">Testing UHD Drivers and Python API</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/usrp.html#benchmarking-usrp-speed-in-python">Benchmarking USRP Speed in Python</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="content/usrp.html#receiving">Receiving</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="content/usrp.html#receive-gain">Receive Gain</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/usrp.html#automatic-gain-control">Automatic Gain Control</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="content/usrp.html#transmitting">Transmitting</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="content/usrp.html#transmit-gain">Transmit Gain</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="content/usrp.html#transmitting-and-receiving-simultaneously">Transmitting and Receiving Simultaneously</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/usrp.html#subdevice-channels-and-antennas">Subdevice, Channels, and Antennas</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/usrp.html#syncing-to-10-mhz-and-pps">Syncing to 10 MHz and PPS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/usrp.html#phase-coherent-sync-of-multiple-b210s-for-mimo">Phase Coherent Sync of Multiple B210s for MIMO</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/usrp.html#gpio">GPIO</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="content/bladerf.html">7. BladeRF in Python</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="content/bladerf.html#bladerf-architecture">bladeRF Architecture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/bladerf.html#software-and-hardware-setup">Software and Hardware Setup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="content/bladerf.html#ubuntu-or-ubuntu-within-wsl">Ubuntu (or Ubuntu within WSL)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/bladerf.html#windows-and-macos">Windows and macOS</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="content/bladerf.html#bladerf-python-api-basics">bladeRF Python API Basics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/bladerf.html#receiving-samples-in-python">Receiving Samples in Python</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/bladerf.html#transmitting-samples-in-python">Transmitting Samples in Python</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/bladerf.html#oscillators-plls-and-calibration">Oscillators, PLLs, and Calibration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/bladerf.html#sampling-at-122-mhz">Sampling at 122 MHz</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/bladerf.html#expansion-ports">Expansion Ports</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/bladerf.html#further-reading">Further Reading</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="content/rtlsdr.html">8. RTL-SDR in Python</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="content/rtlsdr.html#rtl-sdr-background">RTL-SDR Background</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/rtlsdr.html#software-setup">Software Setup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="content/rtlsdr.html#ubuntu-or-ubuntu-within-wsl">Ubuntu (or Ubuntu within WSL)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/rtlsdr.html#windows">Windows</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="content/rtlsdr.html#testing-the-rtl-sdr">Testing the RTL-SDR</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/rtlsdr.html#rtl-sdr-python-code">RTL-SDR Python Code</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="content/rtlsdr.html#avoiding-rtl-sdr-glitching">Avoiding RTL-SDR Glitching</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/rtlsdr.html#gain-setting">Gain Setting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/rtlsdr.html#allowed-sample-rates">Allowed Sample Rates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/rtlsdr.html#ppm-setting">PPM Setting</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="content/rtlsdr.html#further-reading">Further Reading</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="content/hackrf.html">9. HackRF One in Python</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="content/hackrf.html#hackrf-architecture">HackRF Architecture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/hackrf.html#software-and-hardware-setup">Software and Hardware Setup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="content/hackrf.html#installing-the-hackrf-library">Installing the HackRF Library</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/hackrf.html#installing-the-python-api">Installing the Python API</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="content/hackrf.html#tx-and-rx-gain">Tx and Rx Gain</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="content/hackrf.html#receive-side">Receive Side</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/hackrf.html#transmit-side">Transmit Side</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="content/hackrf.html#receiving-iq-samples-within-python-with-the-hackrf">Receiving IQ Samples within Python with the HackRF</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="content/noise.html">10. Noise and Random Variables</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="content/noise.html#gaussian-noise">Gaussian Noise</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/noise.html#decibels-db">Decibels (dB)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/noise.html#noise-in-frequency-domain">Noise in Frequency Domain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/noise.html#complex-noise">Complex Noise</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/noise.html#awgn">AWGN</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/noise.html#snr-and-sinr">SNR and SINR</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/noise.html#deeper-dive-into-random-variables">Deeper Dive into Random Variables</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="content/noise.html#joint-distributions">Joint Distributions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/noise.html#probability-distributions">Probability Distributions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/noise.html#expectation-a-k-a-mean">Expectation (a.k.a. Mean)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/noise.html#variance-and-standard-deviation">Variance and Standard Deviation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/noise.html#covariance">Covariance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/noise.html#variance-of-a-sum-of-variables">Variance of a Sum of Variables</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="content/noise.html#complex-random-variables">Complex Random Variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/noise.html#random-processes">Random Processes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="content/noise.html#independence-and-correlation">Independence and Correlation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="content/noise.html#further-reading">Further Reading</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="content/filters.html">11. Filters</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="content/filters.html#filter-basics">Filter Basics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/filters.html#filter-representation">Filter Representation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="content/filters.html#example-use-case">Example Use-Case</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/filters.html#real-vs-complex-filters">Real vs. Complex Filters</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="content/filters.html#convolution">Convolution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/filters.html#filter-implementation">Filter Implementation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="content/filters.html#fir-vs-iir">FIR vs IIR</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="content/filters.html#fir-filter-design">FIR Filter Design</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="content/filters.html#within-python">Within Python</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/filters.html#stateful-filtering">Stateful Filtering</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/filters.html#rd-party-tools">3rd Party Tools</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="content/filters.html#arbitrary-frequency-response">Arbitrary Frequency Response</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/filters.html#intro-to-pulse-shaping">Intro to Pulse Shaping</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/filters.html#filtering-in-chunks">Filtering in Chunks</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="content/filters.html#the-simple-way-carry-the-state">The Simple Way: Carry the State</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/filters.html#overlap-add">Overlap-Add</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/filters.html#overlap-save">Overlap-Save</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="content/filters.html#external-resources-and-example-python-code">External Resources and Example Python Code</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="content/link_budgets.html">12. Link Budgets</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="content/link_budgets.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/link_budgets.html#signal-power-budget">Signal Power Budget</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="content/link_budgets.html#transmit-power">Transmit Power</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/link_budgets.html#antenna-gains">Antenna Gains</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/link_budgets.html#path-loss">Path Loss</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/link_budgets.html#miscellaneous-losses">Miscellaneous Losses</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/link_budgets.html#signal-power-equation">Signal Power Equation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/link_budgets.html#eirp">EIRP</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="content/link_budgets.html#noise-power-budget">Noise Power Budget</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/link_budgets.html#snr">SNR</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/link_budgets.html#example-link-budget-ads-b">Example Link Budget: ADS-B</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="content/channel_coding.html">13. Channel Coding</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="content/channel_coding.html#why-we-need-channel-coding">Why We Need Channel Coding</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/channel_coding.html#types-of-codes">Types of Codes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/channel_coding.html#code-rate">Code-Rate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/channel_coding.html#modulation-and-coding">Modulation and Coding</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/channel_coding.html#hamming-code">Hamming Code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/channel_coding.html#soft-vs-hard-decoding">Soft vs Hard Decoding</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/channel_coding.html#shannon-limit">Shannon Limit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/channel_coding.html#state-of-the-art-codes">State of the Art Codes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="content/iq_files.html">14. IQ Files and SigMF</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="content/iq_files.html#binary-files">Binary Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/iq_files.html#python-examples">Python Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/iq_files.html#coming-from-matlab">Coming from MATLAB</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/iq_files.html#visually-analyzing-an-rf-file">Visually Analyzing an RF File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/iq_files.html#max-values-and-saturation">Max Values and Saturation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/iq_files.html#sigmf-and-annotating-iq-files">SigMF and Annotating IQ Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/iq_files.html#sigmf-collection-for-array-recordings">SigMF Collection for Array Recordings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/iq_files.html#midas-blue-file-format">Midas Blue File Format</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="content/multipath_fading.html">15. Multipath Fading</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="content/multipath_fading.html#multipath">Multipath</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/multipath_fading.html#fading">Fading</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/multipath_fading.html#simulating-rayleigh-fading">Simulating Rayleigh Fading</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/multipath_fading.html#mitigating-multipath-fading">Mitigating Multipath Fading</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="content/multipath_fading.html#cdma">CDMA</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/multipath_fading.html#ofdm">OFDM</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="content/pulse_shaping.html">16. Pulse Shaping</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="content/pulse_shaping.html#inter-symbol-interference-isi">Inter-Symbol-Interference (ISI)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/pulse_shaping.html#matched-filter">Matched Filter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/pulse_shaping.html#splitting-a-filter-in-half">Splitting a Filter in Half</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/pulse_shaping.html#specific-pulse-shaping-filters">Specific Pulse Shaping Filters</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="content/pulse_shaping.html#raised-cosine-filter">Raised-Cosine Filter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/pulse_shaping.html#root-raised-cosine-filter">Root Raised-Cosine Filter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/pulse_shaping.html#other-pulse-shaping-filters">Other Pulse-Shaping Filters</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="content/pulse_shaping.html#roll-off-factor">Roll-Off Factor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/pulse_shaping.html#python-exercise">Python Exercise</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/pulse_shaping.html#eye-diagrams">Eye Diagrams</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/pulse_shaping.html#oqpsk-and-msk">OQPSK and MSK</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/pulse_shaping.html#external-resources-and-example-python-code">External Resources and Example Python Code</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="content/sync.html">17. Synchronization</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="content/sync.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/sync.html#simulating-wireless-channel">Simulating Wireless Channel</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="content/sync.html#fractional-delay-filters">Fractional Delay Filters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/sync.html#adding-a-frequency-offset">Adding a Frequency Offset</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="content/sync.html#time-synchronization">Time Synchronization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/sync.html#time-synchronization-with-interpolation">Time Synchronization with Interpolation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/sync.html#coarse-frequency-synchronization">Coarse Frequency Synchronization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/sync.html#fine-frequency-synchronization">Fine Frequency Synchronization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/sync.html#frame-synchronization">Frame Synchronization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/sync.html#external-resources-and-example-python-code">External Resources and Example Python Code</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="content/rds.html">18. End-to-End Example with RDS</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="content/rds.html#introduction-to-fm-radio-and-rds">Introduction to FM Radio and RDS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/rds.html#the-rds-signal">The RDS Signal</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="content/rds.html#transmit-side">Transmit Side</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/rds.html#receive-side">Receive Side</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="content/rds.html#acquiring-a-signal">Acquiring a Signal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/rds.html#fm-demodulation">FM Demodulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/rds.html#frequency-shift">Frequency Shift</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/rds.html#filter-to-isolate-rds">Filter to Isolate RDS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/rds.html#decimate-by-10">Decimate by 10</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/rds.html#resample-to-19-khz">Resample to 19 kHz</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/rds.html#time-synchronization-symbol-level">Time Synchronization (Symbol-Level)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/rds.html#fine-frequency-synchronization">Fine Frequency Synchronization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/rds.html#demodulate-the-bpsk">Demodulate the BPSK</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/rds.html#differential-decoding">Differential Decoding</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/rds.html#rds-decoding">RDS Decoding</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/rds.html#rds-parsing">RDS Parsing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/rds.html#wrap-up-and-final-code">Wrap-Up and Final Code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/rds.html#acknowledgments">Acknowledgments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/rds.html#further-reading">Further Reading</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/rds.html#external-resources-and-example-python-code">External Resources and Example Python Code</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="content/doa.html">19. Beamforming &amp; DOA</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="content/doa.html#beamforming-overview">Beamforming Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/doa.html#direction-of-arrival-overview">Direction-of-Arrival Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/doa.html#types-of-arrays">Types of Arrays</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/doa.html#sdr-requirements">SDR Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/doa.html#intro-to-matrix-math-in-python-numpy">Intro to Matrix Math in Python/NumPy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/doa.html#steering-vector">Steering Vector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/doa.html#receiving-a-signal">Receiving a Signal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/doa.html#conventional-beamforming-doa">Conventional Beamforming &amp; DOA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/doa.html#degree-ambiguity">180-Degree Ambiguity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/doa.html#beam-pattern">Beam Pattern</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/doa.html#array-beamwidth">Array Beamwidth</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/doa.html#when-d-is-not-2">When d is not λ/2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/doa.html#spatial-tapering">Spatial Tapering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/doa.html#manually-changing-weights">Manually Changing Weights</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/doa.html#adaptive-beamforming">Adaptive Beamforming</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/doa.html#mvdr-capon-beamformer">MVDR/Capon Beamformer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/doa.html#covariance-matrix">Covariance Matrix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/doa.html#lcmv-beamformer">LCMV Beamformer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/doa.html#null-steering">Null Steering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/doa.html#music">MUSIC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/doa.html#root-music">Root MUSIC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/doa.html#lms">LMS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/doa.html#training-data">Training Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/doa.html#simulating-wideband-interferers">Simulating Wideband Interferers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/doa.html#circular-arrays">Circular Arrays</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/doa.html#conclusion-and-references">Conclusion and References</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="content/2d_beamforming.html">20. 2D Beamforming</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="content/2d_beamforming.html#rectangular-arrays-and-2d-beamforming">Rectangular Arrays and 2D Beamforming</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/2d_beamforming.html#processing-signals-from-an-actual-2d-array">Processing Signals from an Actual 2D Array</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/2d_beamforming.html#interactive-design-tool">Interactive Design Tool</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="content/phaser.html">21. Hands-on with Phaser</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="content/phaser.html#hardware-overview">Hardware Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/phaser.html#sd-card-preparation">SD Card Preparation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/phaser.html#hardware-preparation">Hardware Preparation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/phaser.html#software-install">Software Install</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/phaser.html#hb100-setup">HB100 Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/phaser.html#calibration">Calibration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/phaser.html#pre-built-example-app">Pre-built Example App</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/phaser.html#phaser-in-python">Phaser in Python</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="content/phaser.html#initializing-phaser-and-pluto">Initializing Phaser and Pluto</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/phaser.html#receiving-samples-from-the-pluto">Receiving Samples from the Pluto</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/phaser.html#performing-beamforming">Performing Beamforming</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/phaser.html#real-time-and-with-spatial-tapering">Real-time and with Spatial Tapering</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="content/phaser.html#monopulse-tracking">Monopulse Tracking</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/phaser.html#radar-with-phaser">Radar with Phaser</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/phaser.html#conclusion">Conclusion</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="content/cyclostationary.html">22. Cyclostationary Processing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="content/cyclostationary.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/cyclostationary.html#review-of-autocorrelation">Review of Autocorrelation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/cyclostationary.html#the-cyclic-autocorrelation-function-caf">The Cyclic Autocorrelation Function (CAF)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/cyclostationary.html#the-spectral-correlation-function-scf">The Spectral Correlation Function (SCF)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/cyclostationary.html#frequency-smoothing-method-fsm">Frequency Smoothing Method (FSM)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/cyclostationary.html#time-smoothing-method-tsm">Time Smoothing Method (TSM)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/cyclostationary.html#pulse-shaped-bpsk">Pulse-Shaped BPSK</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/cyclostationary.html#snr-and-number-of-symbols">SNR and Number of Symbols</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/cyclostationary.html#qpsk-and-higher-order-modulation">QPSK and Higher-Order Modulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/cyclostationary.html#multiple-overlapping-signals">Multiple Overlapping Signals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/cyclostationary.html#alternative-csp-features">Alternative CSP Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/cyclostationary.html#spectral-coherence-function-coh">Spectral Coherence Function (COH)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/cyclostationary.html#conjugates">Conjugates</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/cyclostationary.html#fft-accumulation-method-fam">FFT Accumulation Method (FAM)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/cyclostationary.html#ofdm">OFDM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/cyclostationary.html#signal-detection-with-known-cyclic-frequency">Signal Detection With Known Cyclic Frequency</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/cyclostationary.html#external-resources">External Resources</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="content/pyqt.html">23. Real-Time GUIs with PyQt</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="content/pyqt.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/pyqt.html#qt-overview">Qt Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/pyqt.html#basic-application-layout">Basic Application Layout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/pyqt.html#application-with-worker-thread">Application with Worker Thread</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/pyqt.html#signals-and-slots">Signals and Slots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/pyqt.html#id1">PyQtGraph</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/pyqt.html#layouts">Layouts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/pyqt.html#qpushbutton"><code class="code docutils literal notranslate"><span class="pre">QPushButton</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/pyqt.html#qslider"><code class="code docutils literal notranslate"><span class="pre">QSlider</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/pyqt.html#qcombobox"><code class="code docutils literal notranslate"><span class="pre">QComboBox</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/pyqt.html#lambda-functions">Lambda Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/pyqt.html#pyqtgraph-s-plotwidget">PyQtGraph’s PlotWidget</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/pyqt.html#pyqtgraph-s-imageitem">PyQtGraph’s ImageItem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/pyqt.html#worker-thread">Worker Thread</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/pyqt.html#pyqt-signals">PyQt Signals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/pyqt.html#worker-thread-slots">Worker Thread Slots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/pyqt.html#worker-thread-run">Worker Thread Run()</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/pyqt.html#final-example-full-code">Final Example Full Code</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="content/detection.html">24. Detection using Correlation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="content/detection.html#signal-detection-and-correlator-basics">Signal Detection and Correlator Basics</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="content/detection.html#the-cross-correlation-function">The Cross-Correlation Function</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/detection.html#python-example-of-a-cross-correlation">Python Example of a Cross-Correlation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/detection.html#valid-same-full-modes">Valid, Same, Full Modes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/detection.html#the-neyman-pearson-detector">The Neyman-Pearson Detector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/detection.html#performance-analysis-roc-curves-and-pd-vs-snr-curves">Performance Analysis: ROC Curves and Pd vs. SNR Curves</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="content/detection.html#example-detecting-gps-signals-below-the-noise-floor">Example: Detecting GPS Signals Below the Noise Floor</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="content/detection.html#quick-primer-on-gps-signals">Quick Primer on GPS Signals</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/detection.html#correlation-approach">Correlation Approach</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/detection.html#example-recording">Example Recording</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/detection.html#python-example">Python Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/detection.html#plotting">Plotting</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="content/detection.html#cfar-detectors-thriving-in-changing-environments">CFAR Detectors: Thriving in Changing Environments</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="content/detection.html#per-lag-vs-system-level-false-alarm-rates">Per-Lag vs. System-Level False Alarm Rates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/detection.html#id1">Python Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/detection.html#frequency-offset-resilient-preamble-correlators">Frequency Offset Resilient Preamble Correlators</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/detection.html#methods-for-resilience-to-frequency-offsets">Methods for Resilience to Frequency Offsets</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="content/detection.html#detecting-direct-sequence-spread-spectrum-dsss-signals">Detecting Direct Sequence Spread Spectrum (DSSS) Signals</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="content/detection.html#the-role-of-auto-correlation-properties">The Role of Auto-Correlation Properties</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/detection.html#common-spreading-sequences">Common Spreading Sequences</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/detection.html#chip-timing-synchronization-in-dsss">Chip-Timing Synchronization in DSSS</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="content/detection.html#real-time-packet-detection-in-continuous-iq-streams">Real-Time Packet Detection in Continuous IQ Streams</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="content/detection.html#implementation">Implementation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/detection.html#practical-considerations-and-tuning">Practical Considerations and Tuning</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="content/detection.html#rake-receivers">Rake Receivers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="content/detection.html#finding-the-fingers">Finding the Fingers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/detection.html#combining-the-fingers">Combining the Fingers</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="content/detection.html#external-resources-and-example-python-code">External Resources and Example Python Code</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="content/fpv_video.html">25. Analog FPV Video Signals</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="content/fpv_video.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/fpv_video.html#signal-details">Signal Details</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/fpv_video.html#demodulating-the-video">Demodulating the Video</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/fpv_video.html#external-resources-and-example-python-code">External Resources and Example Python Code</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="content/tdoa.html">26. TDOA</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="content/tdoa.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/tdoa.html#tdoa-geometry">TDOA Geometry</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="content/tdoa.html#from-time-difference-to-range-difference">From Time Difference to Range Difference</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/tdoa.html#the-hyperbola">The Hyperbola</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/tdoa.html#multilateration">Multilateration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/tdoa.html#reference-sensor-and-independent-pairs">Reference Sensor and Independent Pairs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/tdoa.html#example-a-three-sensor-2d-fix">Example: A Three-Sensor 2D Fix</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="content/tdoa.html#the-signal-and-measurement-model">The Signal and Measurement Model</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="content/tdoa.html#received-signal-model">Received-Signal Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/tdoa.html#defining-the-tdoa">Defining the TDOA</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/tdoa.html#noise-assumptions">Noise Assumptions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/tdoa.html#the-nonlinear-measurement-equations">The Nonlinear Measurement Equations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/tdoa.html#the-range-difference-covariance">The Range-Difference Covariance</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="content/tdoa.html#time-delay-estimation-the-measurement-front-end">Time-Delay Estimation (the Measurement Front End)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="content/tdoa.html#cross-correlation">Cross-Correlation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/tdoa.html#python-simulation">Python Simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/tdoa.html#resolution-and-sub-sample-estimation">Resolution and Sub-Sample Estimation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/tdoa.html#the-generalized-cross-correlation-framework">The Generalized Cross-Correlation Framework</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/tdoa.html#practical-considerations">Practical Considerations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/tdoa.html#gcc-phat-python-example">GCC-PHAT Python Example</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="content/tdoa.html#closed-form-localization-algorithms">Closed-Form Localization Algorithms</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="content/tdoa.html#the-linearization-strategy">The Linearization Strategy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/tdoa.html#spherical-interpolation-and-spherical-intersection">Spherical Interpolation and Spherical Intersection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/tdoa.html#fang-s-method">Fang’s Method</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/tdoa.html#chan-s-method-two-step-weighted-least-squares">Chan’s Method (Two-Step Weighted Least Squares)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/tdoa.html#example-continued-solving-the-three-sensor-fix-in-closed-form">Example, Continued: Solving the Three-Sensor Fix in Closed Form</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="content/tdoa.html#iterative-and-statistical-estimation">Iterative and Statistical Estimation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="content/tdoa.html#nonlinear-least-squares">Nonlinear Least Squares</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/tdoa.html#taylor-series-gauss-newton-method">Taylor-Series (Gauss-Newton) Method</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/tdoa.html#maximum-likelihood-estimation">Maximum-Likelihood Estimation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/tdoa.html#robust-recursive-and-bayesian-extensions">Robust, Recursive, and Bayesian Extensions</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="content/tdoa.html#brute-force-heatmap-approach">Brute-Force Heatmap Approach</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/tdoa.html#performance-analysis-and-fundamental-bounds">Performance Analysis and Fundamental Bounds</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="content/tdoa.html#error-propagation">Error Propagation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/tdoa.html#the-time-delay-estimation-bound">The Time-Delay Estimation Bound</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/tdoa.html#the-localization-cramer-rao-lower-bound">The Localization Cramér-Rao Lower Bound</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/tdoa.html#geometric-dilution-of-precision">Geometric Dilution of Precision</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/tdoa.html#sensor-placement-optimization">Sensor-Placement Optimization</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="content/tdoa.html#practical-challenges-in-real-systems">Practical Challenges in Real Systems</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="content/tdoa.html#receiver-synchronization">Receiver Synchronization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/tdoa.html#multipath-and-non-line-of-sight-propagation">Multipath and Non-Line-of-Sight Propagation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/tdoa.html#sensor-position-uncertainty-and-calibration">Sensor-Position Uncertainty and Calibration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="content/tdoa.html#advanced-topics">Advanced Topics</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="content/tdoa.html#joint-tdoa-fdoa-estimation">Joint TDOA/FDOA Estimation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="content/tdoa.html#external-resources-and-example-python-code">External Resources and Example Python Code</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="content/sdr_frameworks.html">27. SDR Frameworks</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="content/sdr_frameworks.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/sdr_frameworks.html#what-is-an-sdr-framework">What is an SDR Framework?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/sdr_frameworks.html#do-you-need-a-framework">Do You Need a Framework?</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="content/sdr_frameworks.html#example-fm-receiver-without-a-framework">Example: FM Receiver Without a Framework</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="content/sdr_frameworks.html#gnu-radio">GNU Radio</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="content/sdr_frameworks.html#fm-receiver-in-gnu-radio-3">FM Receiver in GNU Radio 3</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/sdr_frameworks.html#bringing-your-own-numpy-code">Bringing Your Own NumPy Code</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/sdr_frameworks.html#the-ecosystem">The Ecosystem</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/sdr_frameworks.html#gnu-radio-4-0">GNU Radio 4.0</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/sdr_frameworks.html#fm-receiver-in-gnu-radio-4-0">FM Receiver in GNU Radio 4.0</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="content/sdr_frameworks.html#futuresdr">FutureSDR</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="content/sdr_frameworks.html#fm-receiver-in-futuresdr">FM Receiver in FutureSDR</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="content/sdr_frameworks.html#redhawk-opencpi-and-the-sca">REDHAWK, OpenCPI, and the SCA</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="content/sdr_frameworks.html#the-software-communications-architecture">The Software Communications Architecture</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/sdr_frameworks.html#redhawk">REDHAWK</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/sdr_frameworks.html#fm-receiver-in-redhawk">FM Receiver in REDHAWK</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/sdr_frameworks.html#opencpi">OpenCPI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/sdr_frameworks.html#fm-receiver-in-opencpi">FM Receiver in OpenCPI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="content/sdr_frameworks.html#why-do-these-feel-so-different">Why Do These Feel So Different?</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="content/sdr_frameworks.html#cyberether">CyberEther</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="content/sdr_frameworks.html#fm-receiver-in-cyberether">FM Receiver in CyberEther</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="content/sdr_frameworks.html#comparison">Comparison</a></li>
+<li class="toctree-l2"><a class="reference internal" href="content/sdr_frameworks.html#external-resources">External Resources</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="content/about_author.html">28. About the Author</a></li>
+</ul>
+</div>
+</details>
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          <a href="content/intro.html" title="Next document"><span class="section-number">1. </span>Introduction</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &#169;2026, Marc Lichtman.
+    
+      <br />
+      PySDR is licensed under
+      <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">
+        CC BY-NC-SA 4.0
+        <img alt="Creative Commons License" width="40px" src="_static/cc-by-nc-sa-88x31.png" />
+      </a>
+  </div>
+  </body>
+</html>

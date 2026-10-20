@@ -1,0 +1,920 @@
+<?php
+
+/* libyate.php
+ * This file is part of the YATE Project http://YATE.null.ro
+ *
+ * PHP object-oriented interface library for Yate
+ *
+ * Yet Another Telephony Engine - a fully featured software PBX and IVR
+ * Copyright (C) 2004-2023 Null Team
+ *
+ * This software is distributed under multiple licenses;
+ * see the COPYING file in the main directory for licensing
+ * information for this specific distribution.
+ *
+ * This use of this software may be subject to additional restrictions.
+ * See the LEGAL file in the main directory for details.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ */
+
+/*
+    WARNING: This file is for PHP 5
+    To modify it for PHP 4 use the following command (needs sed version 4)
+
+    sed -i.bak -e 's/static \(function\)/\1/' libyate.php
+*/
+
+@include_once("libyate_config.php");
+
+if (!isset($yate_buffer_read_full_line))
+    $yate_buffer_read_full_line = false;
+else
+    $yate_buffer_read_full_line = !!$yate_buffer_read_full_line;
+
+/**
+ * The Yate class encapsulates the object oriented interface of PHP to Yate
+ */
+class Yate
+{
+    /** String: Type of the event */
+    var $type;
+    /** String: Name of the message */
+    var $name;
+    /** String: Return value of the message */
+    var $retval;
+    /** Number: Time the message was generated */
+    var $origin;
+    /** String: Temporarily unique message ID */
+    var $id;
+    /** Boolean: Was the message handled or not */
+    var $handled;
+    /** Array: Message parameters, $obj->params["name"]="value" */
+    var $params;
+
+    /**
+     * Static function to output a string to Yate's stderr or logfile
+     * NOTE: Yate expects an escaped string for 'debug'
+     * @param $str String to output
+     * @param $level Debug level. Send a debug message if greater than 0
+     * @param $escape Escape the string to output
+     */
+    static function Output($str,$level = 0,$escape = false)
+    {
+	global $yate_stderr, $yate_output;
+	if ($str === true)
+	    $yate_output = true;
+	else if ($str === false)
+	    $yate_output = false;
+	else if ($yate_output) {
+	    if ($escape)
+		$str = Yate::Escape($str);
+	    if ($level <= 0)
+		_yate_print("%%>output:$str\n");
+	    else
+		_yate_print("%%>debug:$level:$str\n");
+	}
+	else
+	    fputs($yate_stderr, "$str\n");
+    }
+
+    /**
+     * Static function to output a string to Yate's stderr or logfile
+     *  only if debugging was enabled.
+     * @param $str String to output, or boolean (true/false) to set debugging
+     * @param $level Debug level. Send a debug message if greater than 0
+     * @param $escape Escape the string to output
+     */
+    static function Debug($str,$level = 0,$escape = false)
+    {
+	global $yate_stderr, $yate_debug;
+	if ($str === true)
+	    $yate_debug = true;
+	else if ($str === false)
+	    $yate_debug = false;
+	else if ($yate_debug)
+	    Yate::Output($str,$level,$escape);
+    }
+
+    /**
+     * Static function to get the unique argument passed by Yate at start time
+     * @return First (and only) command line argument passed by Yate
+     */
+    static function Arg()
+    {
+	if (isset($_SERVER['argv'][1]))
+	    return $_SERVER['argv'][1];
+	return null;
+    }
+
+    /**
+     * Static function to convert a Yate string representation to a boolean
+     * @param $str String value to convert
+     * @return True if $str is "true", false otherwise
+     */
+    static function Str2bool($str)
+    {
+	return ($str == "true") ? true : false;
+    }
+
+    /**
+     * Static function to convert a boolean to a Yate string representation
+     * @param $bool Boolean value to convert
+     * @return The string "true" if $bool was true, "false" otherwise
+     */
+    static function Bool2str($bool)
+    {
+	return $bool ? "true" : "false";
+    }
+
+    /**
+     * Static function used to retrieve a boolean value from string or already boolean
+     * @param $val Boolean value to convert
+     * @param $defVal Value to return if not matched
+     * @return True/false or value of $defVal
+     */
+    static function ToBoolean($val,$defVal = false)
+    {
+	switch ($val) {
+	    case "true":
+	    case "yes":
+	    case "on":
+	    case "enable":
+	    case "t":
+		return true;
+	    case "false":
+	    case "no":
+	    case "off":
+	    case "disable":
+	    case "f":
+		return false;
+	}
+	return (true === $val || false === $val) ? $val : $defVal;
+    }
+
+    /**
+     * Static function used to convert a string to integer value
+     * @param $str Boolean value to convert
+     * @param $defVal Value to return if not valid
+     * @param $minVal Optional minimum value to check.
+     *  If numeric value is less than $minVal returns $minVal if clamped, $defVal otherwise
+     * @param $maxVal Optional maximum value to check.
+     *  If numeric value is greater than $maxVal returns $maxVal if clamped, $defVal otherwise
+     * @param $clamp Clamp numeric value
+     * @param $base Optional base
+     * @return Numeric value or $defVal
+     */
+    static function ToInteger($str,$defVal = 0,$minVal = null,$maxVal = null,$clamp = true,$base = 0)
+    {
+	if (!($str && strlen($str)))
+	    return $defVal;
+	$str = intval($str,$base);
+	if (is_numeric($minVal)) {
+	    if ($str < $minVal)
+		return $clamp ? $minVal : $defVal;
+	}
+	if (is_numeric($maxVal)) {
+	    if ($str > $maxVal)
+		return $clamp ? $maxVal : $defVal;
+	}
+	return $str;
+    }
+
+    /**
+     * Static function used to retrieve a value from array/object
+     * @param $obj The array or object
+     * @param $name Parameter name
+     * @param $defVal Default value to return if parameter is not found in array
+     * @return Parameter value or $defVal
+     */
+    static function GetParam($obj,$name,$defVal = null)
+    {
+	if (is_array($obj))
+	    return isset($obj[$name]) ? $obj[$name] : $defVal;
+	if (is_object($obj))
+	    return property_exists($obj,$name) ? $obj[$name] : $defVal;
+	return $defVal;
+    }
+
+    /**
+     * Static function used to retrieve a boolean value from array/object parameter
+     * @param $obj The array or object
+     * @param $name Parameter name
+     * @param $defVal Value to return if not matched or not found
+     * @return Parameter value or $defVal
+     */
+    static function GetBoolParam($obj,$name,$defVal = false)
+    {
+	return Yate::ToBoolean(Yate::GetParam($obj,$name),$defVal);
+    }
+
+    /**
+     * Static function used to retrieve an integer value from array/object parameter
+     * @param $obj The array or object
+     * @param $name Parameter name
+     * @param $defVal Value to return if not valid
+     * @param $minVal Optional minimum value to check.
+     *  If numeric value is less than $minVal returns $minVal if clamped, $defVal otherwise
+     * @param $maxVal Optional maximum value to check.
+     *  If numeric value is greater than $maxVal returns $maxVal if clamped, $defVal otherwise
+     * @param $clamp Clamp numeric value
+     * @param $base Optional base
+     * @return Numeric value or $defVal
+     */
+    static function GetIntParam($obj,$name,$defVal = 0,$minVal = null,$maxVal = null,
+	$clamp = true,$base = 0)
+    {
+	return Yate::ToInteger(Yate::GetParam($obj,$name),$defVal,$minVal,$maxVal,$clamp,$base);
+    }
+
+    /**
+     * Static function to convert a string to its Yate escaped format
+     * @param $str String to escape
+     * @param $extra (optional) Character to escape in addition to required ones
+     * @return Yate escaped string
+     */
+    static function Escape($str, $extra = "")
+    {
+	if ($str === true)
+	    return "true";
+	if ($str === false)
+	    return "false";
+	$str = $str . "";
+	$s = "";
+	$n = strlen($str);
+	for ($i=0; $i<$n; $i++) {
+	    $c = $str[$i];
+	    if ((ord($c) < 32) || ($c == ':') || ($c == $extra)) {
+		$c = chr(ord($c) + 64);
+		$s .= '%';
+	    }
+	    else if ($c == '%')
+		$s .= $c;
+	    $s .= $c;
+	}
+	return $s;
+    }
+
+    /**
+     * Static function to convert a Yate escaped string back to a plain string
+     * @param $str Yate escaped string to unescape
+     * @return Unescaped string
+     */
+    static function Unescape($str)
+    {
+	$s = "";
+	$n = strlen($str);
+	for ($i=0; $i<$n; $i++) {
+	    $c = $str[$i];
+	    if ($c == '%') {
+		$i++;
+		$c = $str[$i];
+		if ($c != '%')
+		    $c = chr(ord($c) - 64);
+	    }
+	    $s .= $c;
+	}
+	return $s;
+    }
+
+    /**
+     * Install a Yate message handler
+     * @param $name Name of the messages to handle
+     * @param $priority (optional) Priority to insert in chain, default 100
+     * @param $filtname (optional) Name of parameter to filter for
+     * @param $filtvalue (optional) Matching value of filtered parameter
+     */
+    static function Install($name, $priority = 100, $filtname = "", $filtvalue = "")
+    {
+	$name=Yate::Escape($name);
+	if ($filtname)
+	    $filtname=":$filtname:$filtvalue";
+	_yate_print("%%>install:$priority:$name$filtname\n");
+    }
+
+    /**
+     * Uninstall a Yate message handler
+     * @param $name Name of the messages to stop handling
+     */
+    static function Uninstall($name)
+    {
+	$name=Yate::Escape($name);
+	_yate_print("%%>uninstall:$name\n");
+    }
+
+    /**
+     * Install a Yate message watcher
+     * @param $name Name of the messages to watch
+     */
+    static function Watch($name)
+    {
+	$name=Yate::Escape($name);
+	_yate_print("%%>watch:$name\n");
+    }
+
+    /**
+     * Uninstall a Yate message watcher
+     * @param $name Name of the messages to stop watching
+     */
+    static function Unwatch($name)
+    {
+	$name=Yate::Escape($name);
+	_yate_print("%%>unwatch:$name\n");
+    }
+
+    /**
+     * Changes a local module parameter
+     * @param $name Name of the parameter to modify
+     * @param $value New value to set in the parameter
+     */
+    static function SetLocal($name, $value)
+    {
+	if (($value === true) || ($value === false))
+	    $value = Yate::Bool2str($value);
+	$name=Yate::Escape($name);
+	$value=Yate::Escape($value);
+	_yate_print("%%>setlocal:$name:$value\n");
+    }
+
+    /**
+     * Asynchronously retrieve a local module parameter
+     * @param $name Name of the parameter to read
+     */
+    static function GetLocal($name)
+    {
+	Yate::SetLocal($name, "");
+    }
+
+    /**
+     * Constructor. Creates a new outgoing message
+     * @param $name Name of the new message
+     * @param $retval (optional) Default return
+     * @param $id (optional) Identifier of the new message
+     */
+    function __construct($name, $retval = "", $id = "")
+    {
+	if ($id == "")
+	    $id=uniqid(rand(),1);
+	$this->type="outgoing";
+	$this->name=$name;
+	$this->retval=$retval;
+	$this->origin=time();
+	$this->handled=false;
+	$this->id=$id;
+	$this->params=array();
+    }
+
+    /**
+     * Retrieve the value of a named parameter
+     * @param $key Name of the parameter to retrieve
+     * @param $defvalue (optional) Default value to return if parameter is not set
+     * @return Value of the $key parameter or $defvalue
+     */
+    function GetValue($key, $defvalue = null)
+    {
+	if (isset($this->params[$key]))
+	    return $this->params[$key];
+	return $defvalue;
+    }
+
+    /**
+     * Set a named parameter
+     * @param $key Name of the parameter to set
+     * @param $value Value to set in the parameter
+     */
+    function SetParam($key, $value)
+    {
+	if (($value === true) || ($value === false))
+	    $value = Yate::Bool2str($value);
+	$this->params[$key] = $value;
+    }
+
+    /**
+     * Clear a named parameter
+     * @param $key Name of the parameter to clear
+     */
+    function ClearParam($key)
+    {
+	if (isset($this->params[$key]))
+	    unset($this->params[$key]);
+    }
+
+    /**
+     * Retrieve a boolean value from parameter
+     * @param $name Parameter name
+     * @param $defVal Value to return if not matched or not found
+     * @return True/false or value of $defVal
+     */
+    function GetBoolValue($name,$defVal = false)
+    {
+	return Yate::GetBoolParam($this->params,$name,$defVal);
+    }
+
+    /**
+     * Retrieve an integer value from array parameter
+     * @param $name Parameter name
+     * @param $defVal Value to return if not valid
+     * @param $minVal Optional minimum value to check.
+     *  If numeric value is less than $minVal returns $minVal if clamped, $defVal otherwise
+     * @param $maxVal Optional maximum value to check.
+     *  If numeric value is greater than $maxVal returns $maxVal if clamped, $defVal otherwise
+     * @param $clamp Clamp numeric value
+     * @param $base Optional base
+     * @return Numeric value or $defVal
+     */
+    function GetIntValue($name,$defVal = 0,$minVal = null,$maxVal = null,
+	$clamp = true,$base = 0)
+    {
+	return Yate::GetIntParam($this->params,$name,$defVal,$minVal,$maxVal,$clamp,$base);
+    }
+
+    /**
+     * Fill the parameter array from a text representation
+     * @param $parts A numerically indexed array with the key=value parameters
+     * @param $offs (optional) Offset in array to start processing from
+     */
+    function FillParams(&$parts, $offs = 0)
+    {
+	$n = count($parts);
+	for ($i=$offs; $i<$n; $i++) {
+	    $s=$parts[$i];
+	    $q=strpos($s,'=');
+	    if ($q === false)
+		$this->params[Yate::Unescape($s)]=NULL;
+	    else
+		$this->params[Yate::Unescape(substr($s,0,$q))]=Yate::Unescape(substr($s,$q+1));
+	}
+    }
+
+    /**
+     * Dispatch the message to Yate for handling
+     * @param $message Message object to dispatch
+     */
+    function Dispatch()
+    {
+	if ($this->type != "outgoing") {
+	    Yate::Output("PHP bug: attempt to dispatch message type: " . $this->type);
+	    return;
+	}
+	$i=Yate::Escape($this->id);
+	$t=(int)$this->origin;
+	$n=Yate::Escape($this->name);
+	$r=Yate::Escape($this->retval);
+	$p = _yate_escaped_params($this->params);
+	_yate_print("%%>message:$i:$t:$n:$r$p\n");
+	$this->type="dispatched";
+    }
+
+    /**
+     * Acknowledge the processing of a message passed from Yate
+     * @param $handled (optional) True if Yate should stop processing, default false
+     */
+    function Acknowledge()
+    {
+	if ($this->type != "incoming") {
+	    Yate::Output("PHP bug: attempt to acknowledge message type: " . $this->type);
+	    return;
+	}
+	$i=Yate::Escape($this->id);
+	$k=Yate::Bool2str($this->handled);
+	$n=Yate::Escape($this->name);
+	$r=Yate::Escape($this->retval);
+	$p = _yate_escaped_params($this->params);
+	_yate_print("%%<message:$i:$k:$n:$r$p\n");
+	$this->type="acknowledged";
+    }
+
+    /**
+     * This static function processes just one input line.
+     * It must be called in a loop to keep messages running. Or else.
+     * @return false if we should exit, true if we should keep running,
+     *  or an Yate object instance. Remember to use === and !== operators
+     *  when comparing against true and false.
+     */
+    static function GetEvent()
+    {
+	global $yate_stdin, $yate_socket, $yate_buffer, $yate_buffer_read_full_line;
+	if ($yate_socket) {
+	    $repeat = false;
+	    if ($yate_buffer_read_full_line)
+		$buf = "";
+	    while (true) {
+		$line = @socket_read($yate_socket,$yate_buffer,PHP_NORMAL_READ);
+		// check for error
+		if ($line == false) {
+		    switch (socket_last_error($yate_socket)) {
+			case 4:  // EINTR
+			case 11: // EAGAIN
+			    return true;
+		    }
+		    return false;
+		}
+		// check for EOF
+		if ($line === "") {
+		    if (!($repeat && strlen($buf) > 0))
+			return false;
+		    $line = $buf;
+		    break;
+		}
+		if (!$yate_buffer_read_full_line)
+		    break;
+		// Done if read less then requested or last char is data end markup
+		$n = strlen($line);
+		if ($n != $yate_buffer || $line[$n - 1] == "\n") {
+		    if (strlen($buf) > 0)
+			$line = $buf . $line;
+		    break;
+		}
+		$buf .= $line;
+		$repeat = true;
+	    }
+	}
+	else {
+	    if ($yate_stdin == false)
+		return false;
+	    // check for EOF
+	    if (feof($yate_stdin))
+		return false;
+	    if ($yate_buffer_read_full_line)
+		// Buffering. Read a full line
+		$line = fgets($yate_stdin);
+	    else
+		// No buffering. Read up to $yate_buffer bytes
+		$line = fgets($yate_stdin,$yate_buffer + 1);
+	    // check for async read no data
+	    if ($line == false)
+		return true;
+	}
+	$line=str_replace("\n", "", $line);
+	if ($line == "")
+	    return true;
+	$ev=true;
+	$part=explode(":", $line);
+	switch ($part[0]) {
+	    case "%%>message":
+		/* incoming message str_id:int_time:str_name:str_retval[:key=value...] */
+		$ev=new Yate(Yate::Unescape($part[3]),Yate::Unescape($part[4]),Yate::Unescape($part[1]));
+		$ev->type="incoming";
+		$ev->origin=(int)$part[2];
+		$ev->FillParams($part,5);
+		break;
+	    case "%%<message":
+		/* message answer str_id:bool_handled:str_name:str_retval[:key=value...] */
+		$ev=new Yate(Yate::Unescape($part[3]),Yate::Unescape($part[4]),Yate::Unescape($part[1]));
+		$ev->type="answer";
+		$ev->handled=Yate::Str2bool($part[2]);
+		$ev->FillParams($part,5);
+		break;
+	    case "%%<install":
+		/* install answer num_priority:str_name:bool_success */
+		$ev=new Yate(Yate::Unescape($part[2]),"",(int)$part[1]);
+		$ev->type="installed";
+		$ev->handled=Yate::Str2bool($part[3]);
+		break;
+	    case "%%<uninstall":
+		/* uninstall answer num_priority:str_name:bool_success */
+		$ev=new Yate(Yate::Unescape($part[2]),"",(int)$part[1]);
+		$ev->type="uninstalled";
+		$ev->handled=Yate::Str2bool($part[3]);
+		break;
+	    case "%%<watch":
+		/* watch answer str_name:bool_success */
+		$ev=new Yate(Yate::Unescape($part[1]));
+		$ev->type="watched";
+		$ev->handled=Yate::Str2bool($part[2]);
+		break;
+	    case "%%<unwatch":
+		/* unwatch answer str_name:bool_success */
+		$ev=new Yate(Yate::Unescape($part[1]));
+		$ev->type="unwatched";
+		$ev->handled=Yate::Str2bool($part[2]);
+		break;
+	    case "%%<connect":
+		/* connect answer str_role:bool_success */
+		$ev=new Yate(Yate::Unescape($part[1]));
+		$ev->type="connected";
+		$ev->handled=Yate::Str2bool($part[2]);
+		break;
+	    case "%%<setlocal":
+		/* local parameter answer str_name:str_value:bool_success */
+		$ev=new Yate(Yate::Unescape($part[1]),Yate::Unescape($part[2]));
+		$ev->type="setlocal";
+		$ev->handled=Yate::Str2bool($part[3]);
+		break;
+	    case "%%<quit":
+		if ($yate_socket) {
+		    socket_close($yate_socket);
+		    $yate_socket = false;
+		}
+		else if ($yate_stdin) {
+		    fclose($yate_stdin);
+		    $yate_stdin = false;
+		}
+		return false;
+	    case "Error in":
+		/* We are already in error so better stay quiet */
+		break;
+	    default:
+		Yate::Output("PHP parse error: " . $line);
+	}
+	return $ev;
+    }
+
+    /**
+     * This static function initializes globals in the PHP Yate External Module.
+     * It should be called before any other method.
+     * @param $async (optional) True if asynchronous, polled mode is desired
+     * @param $addr Hostname to connect to or UNIX socket path
+     * @param $port TCP port to connect to, zero to use UNIX sockets
+     * @param $role Role of this connection - "global" or "channel"
+     * @param $buffer Buffer length
+     * @param $readFullLine Read full line. null: use default. Otherwise: enable/disable
+     * @return True if initialization succeeded, false if failed
+     */
+    static function Init($async = false, $addr = "", $port = 0, $role = "", $buffer = 8192,
+	$readFullLine = null)
+    {
+	global $yate_stdin, $yate_stdout, $yate_stderr;
+	global $yate_socket, $yate_buffer, $yate_debug, $yate_output, $yate_buffer_read_full_line;
+	$yate_debug = false;
+	$yate_stdin = false;
+	$yate_stdout = false;
+	$yate_stderr = false;
+	$yate_output = false;
+	$yate_socket = false;
+	if ($buffer < 2048)
+	    $buffer = 2048;
+	else if ($buffer > 65536)
+	    $buffer = 65536;
+	$yate_buffer = $buffer;
+	if (null !== $readFullLine)
+	    $yate_buffer_read_full_line = !!$readFullLine;
+	if ($addr) {
+	    $ok = false;
+	    if (!function_exists("socket_create")) {
+		$yate_stderr = fopen("php://stderr","w");
+		Yate::Output("PHP sockets missing, initialization failed");
+		return false;
+	    }
+	    if ($port) {
+		$yate_socket = @socket_create(AF_INET,SOCK_STREAM,SOL_TCP);
+		$ok = @socket_connect($yate_socket,$addr,$port);
+	    }
+	    else {
+		$yate_socket = @socket_create(AF_UNIX,SOCK_STREAM,0);
+		$ok = @socket_connect($yate_socket,$addr,$port);
+	    }
+	    if (($yate_socket === false) || !$ok) {
+		$yate_socket = false;
+		$yate_stderr = fopen("php://stderr","w");
+		Yate::Output("Socket error, initialization failed");
+		return false;
+	    }
+	    $yate_output = true;
+	}
+	else {
+	    $yate_stdin = fopen("php://stdin","r");
+	    $yate_stdout = fopen("php://stdout","w");
+	    $yate_stderr = fopen("php://stderr","w");
+	    $role = "";
+	    flush();
+	}
+	set_error_handler("_yate_error_handler");
+	ob_implicit_flush(1);
+	if ($async && function_exists("stream_set_blocking") && $yate_stdin)
+	    stream_set_blocking($yate_stdin,false);
+	if ($role)
+	    _yate_print("%%>connect:$role\n");
+	return true;
+    }
+
+    /**
+     * Send a quit command to the External Module
+     * @param close Set to true to close the communication immediately
+     */
+    static function Quit($close = false)
+    {
+	global $yate_stdin, $yate_socket;
+	_yate_print("%%>quit\n");
+	if ($close) {
+	    if ($yate_socket) {
+		socket_close($yate_socket);
+		$yate_socket = false;
+	    }
+	    else if ($yate_stdin) {
+		fclose($yate_stdin);
+		$yate_stdin = false;
+	    }
+	}
+    }
+
+    /**
+     * Execute an application
+     * @param $cmd Command line
+     * @param $out Command output buffer
+     * @return NULL (success) or error description
+     */
+    static function Execute($cmd,&$out = null)
+    {
+	Yate::SetLastError();
+	try {
+	    $code = 0;
+	    $res = exec($cmd,$out,$code);
+	    if (false === $res)
+		return Yate::BuildError("exec");
+	    if ($code)
+		return Yate::BuildError("exec",$code);
+	}
+	catch (Exception $e) { return Yate::BuildError("exec",null,$e); }
+	return Yate::SetLastError(false);
+    }
+
+    /**
+     * Read file data
+     * @param $path File path
+     * @param $data Destination for read data
+     * @param $lines True to read data as lines, false to read data as string
+     * @return NULL (success) or error description
+     */
+    static function ReadFile($path,&$data,$lines = false)
+    {
+	Yate::SetLastError();
+	try {
+	    if ($lines)
+		$data = file($path);
+	    else
+		$data = file_get_contents($path);
+	    if (false === $data)
+		return Yate::BuildError("file-read",);
+	}
+	catch (Exception $e) { return Yate::BuildError("file-read",null,$e); }
+	return Yate::SetLastError(false);
+    }
+
+    /**
+     * Read file data
+     * @param $path File path
+     * @param $data Data to write
+     * @param $append Append data (default: no, replace file contents)
+     * @param $lck Safe write
+     * @return NULL (success) or error description
+     */
+    static function WriteFile($path,&$data,$append = false,$lck = true)
+    {
+	Yate::SetLastError();
+	try {
+	    $flags = 0;
+	    if ($append)
+		$flags |= FILE_APPEND;
+	    if ($lck)
+		$flags |= LOCK_EX;
+	    $res = file_put_contents($path,$data,$flags);
+	    if (false === $res)
+		return Yate::BuildError("file-write");
+	}
+	catch (Exception $e) { return Yate::BuildError("file-write",null,$e); }
+	return Yate::SetLastError(false);
+    }
+
+    /**
+     * Set or reset last error
+     * @param $prepare Prepare or retrieve
+     * @return Last error if not prepare
+     */
+    static function SetLastError($prepare = true)
+    {
+	global $yate_last_error;
+	if ($prepare) {
+	    $yate_last_error = true;
+	    return;
+	}
+	$e = null;
+	if (isset($yate_last_error) && is_array($yate_last_error))
+	    $e = $yate_last_error;
+	$yate_last_error = null;
+	return $e;
+    }
+
+    /**
+     * Build an error description
+     * @param $oper Failed operation
+     * @param $code Optional code (for failure)
+     * @param $err Error (exception)
+     * @return Error description
+     */
+    static function BuildError($oper,$code = null,&$err = null)
+    {
+	$e = Yate::SetLastError(false);
+	if ($err && method_exists($err,"getMessage")) {
+	    $code = $err->getCode();
+	    $e = $err->getMessage();
+	    $err = array();
+	    if ($e)
+		$err["error"] = $e;
+	    if ($code)
+		$err["failure_code"] = $code;
+	}
+	else if (is_array($e)) {
+	    if (isset($e["errstr"]))
+		$err["error"] = $e["errstr"];
+	    if (isset($e["errno"]))
+		$err["failure_code"] = $e["errno"];
+	}
+	else if ($code)
+	    $err["failure_code"] = $code;
+	else
+	    $err = array();
+	if (!isset($err["reason"]))
+	    $err["reason"] = "failure";
+	return $err;
+    }
+
+}
+
+/* Internal error handler callback - output plain text to stderr */
+function _yate_error_handler($errno, $errstr, $errfile, $errline)
+{
+    global $yate_last_error;
+    if (isset($yate_last_error) && $yate_last_error) {
+	$yate_last_error = array("errno" => $errno, "errstr" => $errstr,
+	    "errfile" => $errfile, "errline" => $errline);
+	return;
+    }
+    if (0 === error_reporting())
+	return;
+    $str = "[$errno] $errstr in $errfile line $errline\n";
+    switch ($errno) {
+	case E_USER_ERROR:
+	    Yate::Output("PHP fatal: $str");
+	    exit(1);
+	    break;
+	case E_WARNING:
+	case E_USER_WARNING:
+	    Yate::Output("PHP error: $str");
+	    break;
+	case E_NOTICE:
+	case E_USER_NOTICE:
+	    Yate::Output("PHP warning: $str");
+	    break;
+	default:
+	    Yate::Output("PHP unknown error: $str");
+    }
+}
+
+/* Internal function */
+function _yate_print($str)
+{
+    global $yate_stdout, $yate_socket;
+    $max = 10;
+    while ("" != $str) {
+	if ($max-- <= 0)
+	    return;
+	// handle partial writes and check errors
+	if ($yate_socket) {
+	    $w = @socket_write($yate_socket, $str);
+	    if (false === $w) {
+		switch (socket_last_error($yate_socket)) {
+		    case 4:  // EINTR
+		    case 11: // EAGAIN
+			break;
+		    default:
+			return;
+		}
+	    }
+	}
+	else if ($yate_stdout)
+	    $w = fputs($yate_stdout, $str);
+	else
+	    return;
+	if ($w) {
+	    $str = substr($str,$w);
+	    if (false === $str)
+		return;
+	}
+	else
+	    usleep(1000);
+    }
+}
+
+// Internal function: escape and concatenate a list of parameters
+function _yate_escaped_params($params)
+{
+    $ep = "";
+    foreach ($params as $key=>$item)
+	$ep .= ':' . Yate::Escape($key,'=') . '=' . Yate::Escape($item);
+    return $ep;
+}
+
+/* Internal function */
+function _yate_message_walk($item, $key, &$result)
+{
+    // workaround to pass by reference the 3rd parameter to message_walk:
+    // the reference is placed in an array and the array is passed by value
+    // taken from: http://hellsgate.online.ee/~glen/array_walk2.php
+    $result[0] .= ':' . Yate::Escape($key,'=') . '=' . Yate::Escape($item);
+}
+
+/* vi: set ts=8 sw=4 sts=4 noet: */
+?>

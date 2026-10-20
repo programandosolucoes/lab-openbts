@@ -1,0 +1,11 @@
+{
+  "name": "yate-pstn-node-controller",
+  "version": "1.0.0",
+  "description": "Controlador Node.js para Yate Telephony Engine / PBX B2B e integração MVNO",
+  "main": "yate_controller.js",
+  "scripts": {
+    "start": "node yate_controller.js"
+  },
+  "dependencies": {},
+  "keywords": ["yate", "telephony", "pbx", "pstn", "mvno", "sdr"]
+}

@@ -1,0 +1,140 @@
+version: '3.8'
+
+services:
+  # -------------------------------------------------------------
+  # 1. BANCO DE DADOS DE SUBSCRIBERS / HSS / UDM (Open5GS)
+  # -------------------------------------------------------------
+  mongodb:
+    image: mongo:6.0
+    container_name: telecom-mongodb
+    restart: unless-stopped
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      telecom_net:
+        ipv4_address: 172.28.0.2
+
+  # -------------------------------------------------------------
+  # 2. CORE DE REDE MÓVEL (Open5GS - 4G EPC & 5G Core)
+  # -------------------------------------------------------------
+  open5gs-core:
+    image: gradiant/open5gs:latest
+    container_name: telecom-open5gs-core
+    restart: unless-stopped
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun
+    depends_on:
+      - mongodb
+    environment:
+      - DB_URI=mongodb://172.28.0.2/open5gs
+    networks:
+      telecom_net:
+        ipv4_address: 172.28.0.10
+    ports:
+      # S1AP / NGAP (Sinalização eNB / gNodeB)
+      - "38412:38412/sctp"
+      - "36412:36412/sctp"
+      # GTP-U (Túneis de Dados de Usuário)
+      - "2152:2152/udp"
+      # Diameter (HSS / PCRF)
+      - "3868:3868/tcp"
+      - "5868:5868/tcp"
+
+  # -------------------------------------------------------------
+  # 3. INTERFACE WEB DE GESTÃO DE SIM CARDS (Open5GS WebUI)
+  # -------------------------------------------------------------
+  open5gs-webui:
+    image: gradiant/open5gs-webui:latest
+    container_name: telecom-open5gs-webui
+    restart: unless-stopped
+    depends_on:
+      - mongodb
+    environment:
+      - DB_URI=mongodb://172.28.0.2/open5gs
+    ports:
+      - "9999:9999" # Acesse http://localhost:9999 (admin/1423)
+    networks:
+      telecom_net:
+        ipv4_address: 172.28.0.11
+
+  # -------------------------------------------------------------
+  # 4. YATE TELEPHONY ENGINE (Móvel / SIP / SS7 / SDR Hook)
+  # -------------------------------------------------------------
+  yate-core:
+    build:
+      context: ./yate-core
+      dockerfile: Dockerfile
+    container_name: telecom-yate-core
+    restart: unless-stopped
+    networks:
+      telecom_net:
+        ipv4_address: 172.28.0.20
+    ports:
+      - "5060:5060/udp"
+      - "5060:5060/tcp"
+      - "5039:5039/tcp" # ExtModule Socket para Node.js
+
+  # -------------------------------------------------------------
+  # 5. CONTROLADOR NODE.JS (PABX B2B Inteligente / PSTN / MVNO)
+  # -------------------------------------------------------------
+  yate-node-controller:
+    build:
+      context: ./yate-node
+      dockerfile: Dockerfile
+    container_name: telecom-yate-node
+    restart: unless-stopped
+    depends_on:
+      - yate-core
+    environment:
+      - YATE_HOST=172.28.0.20
+      - YATE_PORT=5039
+    networks:
+      telecom_net:
+        ipv4_address: 172.28.0.21
+
+  # -------------------------------------------------------------
+  # 6. ASTERISK (Application Server de Voz / URA / Voicemail / IMS)
+  # -------------------------------------------------------------
+  asterisk:
+    image: andrius/asterisk:3.20-20
+    container_name: telecom-asterisk
+    restart: unless-stopped
+    networks:
+      telecom_net:
+        ipv4_address: 172.28.0.30
+    ports:
+      - "5080:5060/udp"
+      - "8088:8088/tcp" # HTTP / WebRTC
+
+  # -------------------------------------------------------------
+  # 7. UERANSIM (Simulador de Rádio gNodeB 5G + Smartphone UE)
+  # -------------------------------------------------------------
+  # Permite simular conexão sem SDR físico de forma 100% virtual
+  ueransim:
+    image: gradiant/ueransim:latest
+    container_name: telecom-ueransim
+    restart: "no"
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun
+    depends_on:
+      - open5gs-core
+    networks:
+      telecom_net:
+        ipv4_address: 172.28.0.40
+
+networks:
+  telecom_net:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.28.0.0/16
+
+volumes:
+  mongodb_data:

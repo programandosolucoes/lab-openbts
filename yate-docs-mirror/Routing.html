@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" class="client-nojs">
+<head>
+<title>Routing - Yate Documentation</title>
+<meta charset="UTF-8" />
+<meta name="generator" content="MediaWiki 1.19.1" />
+<link rel="shortcut icon" href="images/favicon.ico" />
+<link rel="search" type="application/opensearchdescription+xml" href="/wiki/opensearch_desc.php" title="Yate Documentation (en)" />
+<link rel="EditURI" type="application/rsd+xml" href="https://docs.yate.ro/wiki/api.php?action=rsd" />
+<link rel="alternate" type="application/atom+xml" title="Yate Documentation Atom feed" href="/wiki/index.php?title=Special:RecentChanges&amp;feed=atom" />
+<link rel="stylesheet" href="https://docs.yate.ro/wiki/load.php?debug=false&amp;lang=en&amp;modules=mediawiki.legacy.commonPrint%2Cshared%7Cskins.vector&amp;only=styles&amp;skin=vector&amp;*" />
+<meta name="ResourceLoaderDynamicStyles" content="" />
+<link rel="stylesheet" href="https://docs.yate.ro/wiki/load.php?debug=false&amp;lang=en&amp;modules=site&amp;only=styles&amp;skin=vector&amp;*" />
+<style>a:lang(ar),a:lang(ckb),a:lang(fa),a:lang(kk-arab),a:lang(mzn),a:lang(ps),a:lang(ur){text-decoration:none}a.new,#quickbar a.new{color:#ba0000}
+
+/* cache key: dcionoiu_mdwk2-mdw_:resourceloader:filter:minify-css:7:c88e2bcd56513749bec09a7e29cb3ffa */
+</style>
+
+<script src="https://docs.yate.ro/wiki/load.php?debug=false&amp;lang=en&amp;modules=startup&amp;only=scripts&amp;skin=vector&amp;*"></script>
+<script>if(window.mw){
+mw.config.set({"wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"Routing","wgTitle":"Routing","wgCurRevisionId":7914,"wgArticleId":32,"wgIsArticle":true,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":["Routing"],"wgBreakFrames":false,"wgPageContentLanguage":"en","wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgRelevantPageName":"Routing","wgRestrictionEdit":[],"wgRestrictionMove":[]});
+}</script><script>if(window.mw){
+mw.loader.implement("user.options",function($){mw.user.options.set({"ccmeonemails":0,"cols":80,"date":"default","diffonly":0,"disablemail":0,"disablesuggest":0,"editfont":"default","editondblclick":0,"editsection":1,"editsectiononrightclick":0,"enotifminoredits":0,"enotifrevealaddr":0,"enotifusertalkpages":1,"enotifwatchlistpages":0,"extendwatchlist":0,"externaldiff":0,"externaleditor":0,"fancysig":0,"forceeditsummary":0,"gender":"unknown","hideminor":0,"hidepatrolled":0,"highlightbroken":1,"imagesize":2,"justify":0,"math":1,"minordefault":0,"newpageshidepatrolled":0,"nocache":0,"noconvertlink":0,"norollbackdiff":0,"numberheadings":0,"previewonfirst":0,"previewontop":1,"quickbar":5,"rcdays":7,"rclimit":50,"rememberpassword":0,"rows":25,"searchlimit":20,"showhiddencats":0,"showjumplinks":1,"shownumberswatching":1,"showtoc":1,"showtoolbar":1,"skin":"vector","stubthreshold":0,"thumbsize":2,"underline":2,"uselivepreview":0,"usenewrc":0,"watchcreations":0,"watchdefault":0,"watchdeletion":0,
+"watchlistdays":3,"watchlisthideanons":0,"watchlisthidebots":0,"watchlisthideliu":0,"watchlisthideminor":0,"watchlisthideown":0,"watchlisthidepatrolled":0,"watchmoves":0,"wllimit":250,"variant":"en","language":"en","searchNs0":true,"searchNs1":false,"searchNs2":false,"searchNs3":false,"searchNs4":false,"searchNs5":false,"searchNs6":false,"searchNs7":false,"searchNs8":false,"searchNs9":false,"searchNs10":false,"searchNs11":false,"searchNs12":false,"searchNs13":false,"searchNs14":false,"searchNs15":false});;},{},{});mw.loader.implement("user.tokens",function($){mw.user.tokens.set({"editToken":"+\\","watchToken":false});;},{},{});
+
+/* cache key: dcionoiu_mdwk2-mdw_:resourceloader:filter:minify-js:7:9983699ab6150ffa89a90653b2338ac8 */
+}</script>
+<script>if(window.mw){
+mw.loader.load(["mediawiki.page.startup","mediawiki.legacy.wikibits","mediawiki.legacy.ajax"]);
+}</script>
+<!--[if lt IE 7]><style type="text/css">body{behavior:url("/wiki/skins/vector/csshover.min.htc")}</style><![endif]--></head>
+<body class="mediawiki ltr sitedir-ltr ns-0 ns-subject page-Routing skin-vector action-view">
+		<div id="mw-page-base" class="noprint"></div>
+		<div id="mw-head-base" class="noprint"></div>
+		<!-- content -->
+		<div id="content" class="mw-body">
+			<a id="top"></a>
+			<div id="mw-js-message" style="display:none;"></div>
+						<!-- sitenotice -->
+			<div id="siteNotice"><div id="localNotice" lang="en" dir="ltr"><p><a rel="nofollow" class="external text" href="http://yate.null.ro/pmwiki/index.php?n=Main.Documentation">Old documentation</a>
+</p></div></div>
+			<!-- /sitenotice -->
+						<!-- firstHeading -->
+			<h1 id="firstHeading" class="firstHeading">
+				<span dir="auto">Routing</span>
+			</h1>
+			<!-- /firstHeading -->
+			<!-- bodyContent -->
+			<div id="bodyContent">
+								<!-- tagline -->
+				<div id="siteSub">From Yate Documentation</div>
+				<!-- /tagline -->
+								<!-- subtitle -->
+				<div id="contentSub"></div>
+				<!-- /subtitle -->
+																<!-- jumpto -->
+				<div id="jump-to-nav" class="mw-jump">
+					Jump to: <a href="#mw-head">navigation</a>,
+					<a href="#p-search">search</a>
+				</div>
+				<!-- /jumpto -->
+								<!-- bodycontent -->
+				<div id="mw-content-text" lang="en" dir="ltr" class="mw-content-ltr"><p>Yate has multiple routing modules.  A routing module is a module that handles (sees) the <a href="/wiki/Call.route" title="Call.route">call.route</a> message.
+</p><p>You can set all routing in a single module or use a combination of modules. If more than one module is used, then the priority that is set in each configuration file determines the order of the modules processing the message. A numerically lower priority means a higher priority of the route. A module can add/modify parameters without handling the message. 
+</p><p>This is the list of the routing modules and a <a href="/wiki/How_To%27s" title="How To's">How To's</a> for each of them:
+</p>
+<table class="yate-table">
+<tr>
+<td class="yate-header-left"><b>Routing modules in Yate</b>
+</td>
+<td class="yate-header-right"><b>How to do routing in Yate</b>
+</td></tr>
+<tr>
+<td class="yate-content-left">
+<ul><li> <a href="/wiki/Regfile" title="Regfile">Regfile module</a>
+</li></ul>
+<p>Module used for autentication, registration, and routing of users from a file.
+</p>
+<ul><li> <a href="/wiki/Regular_expressions" title="Regular expressions">Regular expressions module</a>
+</li></ul>
+<p>Module used for routing incoming and outgoing call legs.
+</p>
+<ul><li> <a href="/wiki/Javascript_module" title="Javascript module">Javascript routing module</a>
+</li></ul>
+<p>Javascript module is a module support for programmatically routing a call.
+</p>
+<ul><li> <a href="/wiki/Register" title="Register">Register module</a>
+</li></ul>
+<p>Module used to write CDR(Call Detail Record) data in the database.
+</p>
+<ul><li> <a href="/wiki/Call_Forker" title="Call Forker">Call forker module</a>
+</li></ul>
+<p>Module used to route a call to multiple alternative targets.
+</p>
+<ul><li> <a href="/wiki/ENUM_Routing" title="ENUM Routing">ENUM route module</a>
+</li></ul>
+<p>Performs routing using the ENUM protocols that maps phone numbers to VoIP (or even other PSTN) resources.
+</p>
+<ul><li> <a href="/wiki/Clustering" title="Clustering">Cluster route module</a>
+</li></ul>
+<p>This module allows building clusters of servers for a single domain.
+</p>
+<ul><li> <a href="/wiki/Late_routing_Module" title="Late routing Module">Late routing Module</a>
+</li></ul>
+<p>This module can be used whenever you need to route the calls to one or several numbers or aliases whose addresses are unknown in advance.
+</p>
+<ul><li> <a href="/wiki/Call_Counters" title="Call Counters">Call Counters Module</a>
+</li></ul>
+<p>This module keeps a count of active calls per user specified context and adds one or all counters to be used in routing decisions.
+</p>
+</td>
+<td class="yate-content-right">
+<ul><li> <a href="/wiki/How_to_register_users_from_regfile" title="How to register users from regfile">How to register users from regfile</a>
+</li></ul>
+<p>Example of register users in Regfile module.
+</p>
+<ul><li> <a href="/wiki/Redirecting_Calls_to_another_User_in_the_Regex_Module" title="Redirecting Calls to another User in the Regex Module">Redirecting Calls to another User in the Regex Module</a>
+</li></ul>
+<p>Example of redirecting calls to another user.
+</p>
+<ul><li> <a href="/wiki/How_to_do_routing_using_javascript" title="How to do routing using javascript">How to do routing using javascript</a>
+</li></ul>
+<p>Examples of how to route calls from javascript module.
+</p>
+<ul><li> <a href="/wiki/How_to_register_users_from_register" title="How to register users from register">How to register users from register</a>
+</li></ul>
+<p>Example of how to register users from a database.
+</p>
+<ul><li> <a href="/wiki/Round_Robin_Routing" title="Round Robin Routing">How to do round-robin routing</a>
+</li></ul>
+<p>Round robin routing examples.
+</p>
+<ul><li> <a href="/wiki/Configuring_regexp_and_callto_parameters_in_cluster_route_module" title="Configuring regexp and callto parameters in cluster route module">Configuring regexp and callto parameters in cluster route module</a>
+</li></ul>
+<p>Example of configuring parameters in cluster route module.
+</p>
+<ul><li> <a href="/wiki/Example_of_forking_a_call_using_lateroute" title="Example of forking a call using lateroute">Forking a call using lateroute</a>
+</li></ul>
+<p>Examples for routing calls using lateroute.
+</p>
+<ul><li> <a href="/wiki/How_to_use_callcounters_module_to_count_incoming_calls" title="How to use callcounters module to count incoming calls">How to use callcounters module to count incoming calls</a>
+</li></ul>
+<p>Example of count incoming calls.
+</p>
+<ul><li> <a href="/wiki/How_to_route_and_bill_from_a_database" title="How to route and bill from a database">How to route and bill from a database</a>
+</li></ul>
+<p>Example on how to route and bill from a database.
+</p>
+</td></tr></table>
+<p><br />
+<b>See also</b>
+</p>
+<ul><li> <a href="/wiki/Modules" title="Modules"> All Yate modules</a>
+</li><li> <a href="/wiki/Telephony" title="Telephony">Telephony</a>
+</li></ul>
+
+<!-- 
+NewPP limit report
+Preprocessor node count: 1/1000000
+Post-expand include size: 0/2097152 bytes
+Template argument size: 0/2097152 bytes
+Expensive parser function count: 0/100
+-->
+
+<!-- Saved in parser cache with key dcionoiu_mdwk2-mdw_:pcache:idhash:32-0!*!0!*!*!*!* and timestamp 20261020061215 -->
+</div>				<!-- /bodycontent -->
+								<!-- printfooter -->
+				<div class="printfooter">
+				Retrieved from "<a href="https://docs.yate.ro/wiki/index.php?title=Routing&amp;oldid=7914">https://docs.yate.ro/wiki/index.php?title=Routing&amp;oldid=7914</a>"				</div>
+				<!-- /printfooter -->
+												<!-- catlinks -->
+				<div id='catlinks' class='catlinks'><div id="mw-normal-catlinks" class="mw-normal-catlinks"><a href="/wiki/Special:Categories" title="Special:Categories">Category</a>: <ul><li><a href="/wiki/Category:Routing" title="Category:Routing">Routing</a></li></ul></div></div>				<!-- /catlinks -->
+												<div class="visualClear"></div>
+				<!-- debughtml -->
+								<!-- /debughtml -->
+			</div>
+			<!-- /bodyContent -->
+		</div>
+		<!-- /content -->
+		<!-- header -->
+		<div id="mw-head" class="noprint">
+			
+<!-- 0 -->
+<div id="p-personal" class="">
+	<h5>Personal tools</h5>
+	<ul>
+		<li id="pt-login"><a href="/wiki/index.php?title=Special:UserLogin&amp;returnto=Routing" title="You are encouraged to log in; however, it is not mandatory [o]" accesskey="o">Log in / create account</a></li>
+	</ul>
+</div>
+
+<!-- /0 -->
+			<div id="left-navigation">
+				
+<!-- 0 -->
+<div id="p-namespaces" class="vectorTabs">
+	<h5>Namespaces</h5>
+	<ul>
+					<li  id="ca-nstab-main" class="selected"><span><a href="/wiki/Routing"  title="View the content page [c]" accesskey="c">Page</a></span></li>
+					<li  id="ca-talk" class="new"><span><a href="/wiki/index.php?title=Talk:Routing&amp;action=edit&amp;redlink=1"  title="Discussion about the content page [t]" accesskey="t">Discussion</a></span></li>
+			</ul>
+</div>
+
+<!-- /0 -->
+
+<!-- 1 -->
+<div id="p-variants" class="vectorMenu emptyPortlet">
+	<h4>
+		</h4>
+	<h5><span>Variants</span><a href="#"></a></h5>
+	<div class="menu">
+		<ul>
+					</ul>
+	</div>
+</div>
+
+<!-- /1 -->
+			</div>
+			<div id="right-navigation">
+				
+<!-- 0 -->
+<div id="p-views" class="vectorTabs">
+	<h5>Views</h5>
+	<ul>
+					<li id="ca-view" class="selected"><span><a href="/wiki/Routing" >Read</a></span></li>
+					<li id="ca-viewsource"><span><a href="/wiki/index.php?title=Routing&amp;action=edit"  title="This page is protected.&#10;You can view its source [e]" accesskey="e">View source</a></span></li>
+					<li id="ca-history" class="collapsible"><span><a href="/wiki/index.php?title=Routing&amp;action=history"  title="Past revisions of this page [h]" accesskey="h">View history</a></span></li>
+			</ul>
+</div>
+
+<!-- /0 -->
+
+<!-- 1 -->
+<div id="p-cactions" class="vectorMenu emptyPortlet">
+	<h5><span>Actions</span><a href="#"></a></h5>
+	<div class="menu">
+		<ul>
+					</ul>
+	</div>
+</div>
+
+<!-- /1 -->
+
+<!-- 2 -->
+<div id="p-search">
+	<h5><label for="searchInput">Search</label></h5>
+	<form action="/wiki/index.php" id="searchform">
+				<div>
+			<input type="search" name="search" title="Search Yate Documentation [f]" accesskey="f" id="searchInput" />			<input type="submit" name="go" value="Go" title="Go to a page with this exact name if exists" id="searchGoButton" class="searchButton" />			<input type="submit" name="fulltext" value="Search" title="Search the pages for this text" id="mw-searchButton" class="searchButton" />					<input type='hidden' name="title" value="Special:Search"/>
+		</div>
+	</form>
+</div>
+
+<!-- /2 -->
+			</div>
+		</div>
+		<!-- /header -->
+		<!-- panel -->
+			<div id="mw-panel" class="noprint">
+				<!-- logo -->
+					<div id="p-logo"><a style="background-image: url(/wiki/images/yatedocs/yate_docs_logo.png);" href="/wiki/Main_Page"  title="Visit the main page"></a></div>
+				<!-- /logo -->
+				
+<!-- Preface -->
+<div class="portal" id='p-Preface'>
+	<h5>Preface</h5>
+	<div class="body">
+		<ul>
+			<li id="n-What-is-Yate-.3F"><a href="/wiki/What_is_Yate">What is Yate ?</a></li>
+			<li id="n-A-Brief-History-of-Yate"><a href="/wiki/A_Brief_History_of_Yate">A Brief History of Yate</a></li>
+			<li id="n-Bug-Reporting"><a href="/wiki/Bug_reporting">Bug Reporting</a></li>
+			<li id="n-Community"><a href="/wiki/Community">Community</a></li>
+			<li id="n-Documentation-Index"><a href="/wiki/Special:AllPages">Documentation Index</a></li>
+		</ul>
+	</div>
+</div>
+
+<!-- /Preface -->
+
+<!-- Configuration -->
+<div class="portal" id='p-Configuration'>
+	<h5>Configuration</h5>
+	<div class="body">
+		<ul>
+			<li id="n-Beginners-in-Yate"><a href="/wiki/Beginners_in_Yate">Beginners in Yate</a></li>
+			<li id="n-Routing"><a href="/wiki/Routing">Routing</a></li>
+			<li id="n-Javascript"><a href="/wiki/Javascript">Javascript</a></li>
+			<li id="n-How-To.27s"><a href="/wiki/How_To%27s">How To's</a></li>
+			<li id="n-Telephony"><a href="/wiki/Telephony">Telephony</a></li>
+		</ul>
+	</div>
+</div>
+
+<!-- /Configuration -->
+
+<!-- Administrators -->
+<div class="portal" id='p-Administrators'>
+	<h5>Administrators</h5>
+	<div class="body">
+		<ul>
+			<li id="n-Download-Yate"><a href="/wiki/Download">Download Yate</a></li>
+			<li id="n-Installation"><a href="/wiki/Installation">Installation</a></li>
+			<li id="n-Administrate-Yate"><a href="/wiki/Administrate_Yate">Administrate Yate</a></li>
+			<li id="n-Configuration-Files"><a href="/wiki/Configuration_Files">Configuration Files</a></li>
+			<li id="n-Modules"><a href="/wiki/Modules">Modules</a></li>
+			<li id="n-Compatibility"><a href="/wiki/Compatibility">Compatibility</a></li>
+		</ul>
+	</div>
+</div>
+
+<!-- /Administrators -->
+
+<!-- Developers -->
+<div class="portal" id='p-Developers'>
+	<h5>Developers</h5>
+	<div class="body">
+		<ul>
+			<li id="n-Programmer.27s-guide"><a href="/wiki/Programmer%27s_guide">Programmer's guide</a></li>
+			<li id="n-Yate-C.2B.2B-API"><a href="http://yate.null.ro/docs/" rel="nofollow">Yate C++ API</a></li>
+			<li id="n-Standard-messages"><a href="/wiki/Standard_Messages">Standard messages</a></li>
+		</ul>
+	</div>
+</div>
+
+<!-- /Developers -->
+
+<!-- SEARCH -->
+
+<!-- /SEARCH -->
+
+<!-- TOOLBOX -->
+
+<!-- /TOOLBOX -->
+
+<!-- LANGUAGES -->
+
+<!-- /LANGUAGES -->
+			</div>
+		<!-- /panel -->
+		<!-- footer -->
+		<div id="footer">
+							<ul id="footer-info">
+											<li id="footer-info-lastmod"> This page was last modified on 10 March 2016, at 12:01.</li>
+											<li id="footer-info-viewcount">This page has been accessed 280,959 times.</li>
+									</ul>
+										<ul id="footer-icons" class="noprint">
+					<li id="footer-poweredbyico">
+						<a href="//www.mediawiki.org/"><img src="/wiki/skins/common/images/poweredby_mediawiki_88x31.png" alt="Powered by MediaWiki" width="88" height="31" /></a>
+					</li>
+				</ul>
+						<div style="clear:both"></div>
+		</div>
+		<!-- /footer -->
+		<script src="https://docs.yate.ro/wiki/load.php?debug=false&amp;lang=en&amp;modules=skins.vector&amp;only=scripts&amp;skin=vector&amp;*"></script>
+<script>if(window.mw){
+mw.loader.load(["mediawiki.user","mediawiki.page.ready"], null, true);
+}</script>
+<script src="https://docs.yate.ro/wiki/load.php?debug=false&amp;lang=en&amp;modules=site&amp;only=scripts&amp;skin=vector&amp;*"></script>
+<!-- Served in 0.108 secs. -->
+	</body>
+</html>
