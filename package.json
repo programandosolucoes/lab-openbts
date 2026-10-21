@@ -1,0 +1,20 @@
+{
+  "name": "mvno-telecom-lab",
+  "version": "1.0.0",
+  "description": "Este repositório contém a biblioteca de livros técnicos, documentação de arquitetura e um laboratório completo conteinerizado (Docker Compose) para aprendizado e prototipação de **MVNO (Mobile Virtual Network Operator)**, **SDR (Software Defined Radio)**, **OpenBTS/Yate** e **Core 4G/5G**.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "ssh://u560021660@77.37.127.250:65002/home/u560021660/domains/git.programandosolucoes.com.br/public_html/git/repos/mvno-telecom-lab.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "playwright": "^1.64.1"
+  }
+}
