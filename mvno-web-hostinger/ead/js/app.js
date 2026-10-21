@@ -1,8 +1,8 @@
 /**
  * @file app.js
  * @description Motor de Execução da Plataforma EAD Telecom Academy Pro
- * Integração do currículo de 24 aulas, player de slides interativos, análise Wireshark,
- * simulador de roteamento LCR e conformidade com a esteira MikroTik do Carlos.
+ * Integração do currículo de 24 aulas, player de slides interativos, áudio narrado (Web Speech API + Áudio Studio),
+ * análise Wireshark, simulador de roteamento LCR e conformidade com a esteira MikroTik do Carlos.
  */
 
 let allLessons = [];
@@ -11,8 +11,14 @@ let currentSlideIndex = 0;
 let completedLessons = new Set();
 let currentTab = 'theory';
 
+// Estado de Áudio / Síntese
+let isPlayingAudio = false;
+let audioTimer = null;
+let audioSecondsElapsed = 0;
+let currentUtterance = null;
+
 // Inicialização ao carregar o DOM
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', function() {
     initCurriculum();
     renderSidebar();
     loadLesson(0);
@@ -22,10 +28,11 @@ document.addEventListener('DOMContentLoaded', () => {
 function initCurriculum() {
     allLessons = [];
     if (typeof courseCurriculum !== 'undefined' && courseCurriculum.modules) {
-        courseCurriculum.modules.forEach(mod => {
-            mod.lessons.forEach(lesson => {
+        courseCurriculum.modules.forEach(function(mod) {
+            mod.lessons.forEach(function(lesson) {
                 allLessons.push({
                     ...lesson,
+                    moduleId: mod.id,
                     moduleTitle: mod.title
                 });
             });
@@ -49,50 +56,52 @@ function renderSidebar() {
 
     accordion.innerHTML = '';
 
-    courseCurriculum.modules.forEach((mod, modIdx) => {
+    courseCurriculum.modules.forEach(function(mod, modIdx) {
         const modCard = document.createElement('div');
         modCard.className = 'module-card';
-        modCard.id = `mod-card-${mod.id}`;
+        modCard.id = 'mod-card-' + mod.id;
 
-        const isFirst = modIdx === 0;
+        const isFirst = (modIdx === 0);
 
-        modCard.innerHTML = `
-            <div class="module-header \${isFirst ? 'open' : ''}" onclick="toggleModuleAccordion(\${mod.id})">
-                <div class="module-title-area">
-                    <span class="module-badge">Módulo \${mod.id}</span>
-                    <strong class="module-name">\${mod.title.replace(/^Módulo \\d+: /, '')}</strong>
-                    <span class="module-count">\${mod.lessons.length} Aulas</span>
-                </div>
-                <span class="accordion-arrow">\${isFirst ? '▼' : '▶'}</span>
-            </div>
-            <div class="module-lessons-list \${isFirst ? 'show' : ''}" id="lessons-list-\${mod.id}">
-                \${mod.lessons.map(lesson => {
-                    const globalIdx = allLessons.findIndex(l => l.id === lesson.id);
-                    const isDone = completedLessons.has(lesson.id);
-                    return `
-                        <div class="lesson-item \${globalIdx === currentLessonIndex ? 'active' : ''}" 
-                             id="lesson-item-\${lesson.id}"
-                             onclick="selectLessonById('\${lesson.id}')">
-                            <input type="checkbox" class="lesson-checkbox" 
-                                   \${isDone ? 'checked' : ''} 
-                                   onclick="event.stopPropagation(); toggleLessonDone('\${lesson.id}')">
-                            <div class="lesson-info">
-                                <span class="lesson-title-text">\${lesson.title}</span>
-                                <span class="lesson-pill-duration">\${lesson.duration}</span>
-                            </div>
-                        </div>
-                    `;
-                }).join('')}
-            </div>
-        `;
+        let lessonsHtml = '';
+        mod.lessons.forEach(function(lesson) {
+            const globalIdx = allLessons.findIndex(function(l) { return l.id === lesson.id; });
+            const isDone = completedLessons.has(lesson.id);
+            const isActive = (globalIdx === currentLessonIndex);
+
+            lessonsHtml += '<div class="lesson-item ' + (isActive ? 'active' : '') + '" ' +
+                'id="lesson-item-' + lesson.id + '" ' +
+                'onclick="selectLessonById(\'' + lesson.id + '\')">' +
+                '<input type="checkbox" class="lesson-checkbox" ' +
+                (isDone ? 'checked' : '') + ' ' +
+                'onclick="event.stopPropagation(); toggleLessonDone(\'' + lesson.id + '\')">' +
+                '<div class="lesson-info">' +
+                '<span class="lesson-title-text">' + lesson.title + '</span>' +
+                '<span class="lesson-pill-duration">' + lesson.duration + '</span>' +
+                '</div>' +
+                '</div>';
+        });
+
+        modCard.innerHTML = 
+            '<div class="module-header ' + (isFirst ? 'open' : '') + '" onclick="toggleModuleAccordion(' + mod.id + ')">' +
+            '<div class="module-title-area">' +
+            '<span class="module-badge">Módulo ' + mod.id + '</span>' +
+            '<strong class="module-name">' + mod.title.replace(/^Módulo \d+: /, '') + '</strong>' +
+            '<span class="module-count">' + mod.lessons.length + ' Aulas</span>' +
+            '</div>' +
+            '<span class="accordion-arrow">' + (isFirst ? '▼' : '▶') + '</span>' +
+            '</div>' +
+            '<div class="module-lessons-list ' + (isFirst ? 'show' : '') + '" id="lessons-list-' + mod.id + '">' +
+            lessonsHtml +
+            '</div>';
 
         accordion.appendChild(modCard);
     });
 }
 
 function toggleModuleAccordion(modId) {
-    const list = document.getElementById(`lessons-list-\${modId}`);
-    const card = document.getElementById(`mod-card-\${modId}`);
+    const list = document.getElementById('lessons-list-' + modId);
+    const card = document.getElementById('mod-card-' + modId);
     const header = card ? card.querySelector('.module-header') : null;
     const arrow = header ? header.querySelector('.accordion-arrow') : null;
 
@@ -100,19 +109,20 @@ function toggleModuleAccordion(modId) {
         const isOpen = list.classList.contains('show');
         if (isOpen) {
             list.classList.remove('show');
-            header.classList.remove('open');
+            if (header) header.classList.remove('open');
             if (arrow) arrow.textContent = '▶';
         } else {
             list.classList.add('show');
-            header.classList.add('open');
+            if (header) header.classList.add('open');
             if (arrow) arrow.textContent = '▼';
         }
     }
 }
 
 function selectLessonById(lessonId) {
-    const idx = allLessons.findIndex(l => l.id === lessonId);
+    const idx = allLessons.findIndex(function(l) { return l.id === lessonId; });
     if (idx !== -1) {
+        stopAudioPlayback();
         loadLesson(idx);
     }
 }
@@ -125,29 +135,44 @@ function loadLesson(index) {
     const lesson = allLessons[index];
 
     // Atualiza metadados no topo
-    document.getElementById('active-lesson-title').textContent = lesson.title;
-    document.getElementById('active-lesson-duration').textContent = `⏱️ \${lesson.duration} • \${lesson.tag}`;
-    document.getElementById('player-lesson-tag').textContent = `\${lesson.id} • \${lesson.tag.toUpperCase()}`;
+    const titleEl = document.getElementById('active-lesson-title');
+    if (titleEl) titleEl.textContent = lesson.title;
+
+    const durEl = document.getElementById('active-lesson-duration');
+    if (durEl) durEl.textContent = '⏱️ ' + lesson.duration + ' • ' + lesson.tag;
+
+    const tagEl = document.getElementById('player-lesson-tag');
+    if (tagEl) tagEl.textContent = lesson.id + ' • ' + lesson.tag.toUpperCase();
 
     // Atualiza Teoria
-    document.getElementById('active-lesson-theory').innerHTML = lesson.theoryText;
+    const theoryEl = document.getElementById('active-lesson-theory');
+    if (theoryEl) theoryEl.innerHTML = lesson.theoryText;
 
     // Atualiza Configuração de Software
     if (lesson.softwareConfig) {
-        document.getElementById('config-software-title').textContent = lesson.softwareConfig.software;
-        document.getElementById('config-software-file').textContent = lesson.softwareConfig.file;
-        document.getElementById('config-explanation').textContent = lesson.softwareConfig.explanation;
-        document.getElementById('config-code-block').textContent = lesson.softwareConfig.code;
+        const swTitle = document.getElementById('config-software-title');
+        const swFile = document.getElementById('config-software-file');
+        const swExp = document.getElementById('config-explanation');
+        const swCode = document.getElementById('config-code-block');
+
+        if (swTitle) swTitle.textContent = lesson.softwareConfig.software;
+        if (swFile) swFile.textContent = lesson.softwareConfig.file;
+        if (swExp) swExp.textContent = lesson.softwareConfig.explanation;
+        if (swCode) swCode.textContent = lesson.softwareConfig.code;
     }
 
     // Atualiza Wireshark
     if (lesson.wiresharkAnalysis) {
-        document.getElementById('wireshark-protocol-badge').textContent = lesson.wiresharkAnalysis.protocol;
-        document.getElementById('wireshark-summary').textContent = lesson.wiresharkAnalysis.summary;
-        document.getElementById('wireshark-raw-trace').textContent = lesson.wiresharkAnalysis.rawTrace;
+        const wsProto = document.getElementById('wireshark-protocol-badge');
+        const wsSummary = document.getElementById('wireshark-summary');
+        const wsTrace = document.getElementById('wireshark-raw-trace');
+
+        if (wsProto) wsProto.textContent = lesson.wiresharkAnalysis.protocol;
+        if (wsSummary) wsSummary.textContent = lesson.wiresharkAnalysis.summary;
+        if (wsTrace) wsTrace.textContent = lesson.wiresharkAnalysis.rawTrace;
     }
 
-    // Atualiza Diagrama inicial
+    // Atualiza Diagrama inicial se houver
     if (lesson.diagramType) {
         switchDiagram(lesson.diagramType);
     }
@@ -156,11 +181,13 @@ function loadLesson(index) {
     renderSlide();
 
     // Atualiza seleção na Sidebar
-    document.querySelectorAll('.lesson-item').forEach(el => el.classList.remove('active'));
-    const activeItem = document.getElementById(`lesson-item-\${lesson.id}`);
+    document.querySelectorAll('.lesson-item').forEach(function(el) {
+        el.classList.remove('active');
+    });
+
+    const activeItem = document.getElementById('lesson-item-' + lesson.id);
     if (activeItem) {
         activeItem.classList.add('active');
-        // Garante que o accordion pai esteja aberto
         const parentList = activeItem.closest('.module-lessons-list');
         if (parentList && !parentList.classList.contains('show')) {
             parentList.classList.add('show');
@@ -176,7 +203,6 @@ function loadLesson(index) {
 
     // Atualiza botão de conclusão
     updateCompleteButton();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function renderSlide() {
@@ -187,14 +213,29 @@ function renderSlide() {
     if (currentSlideIndex < 0) currentSlideIndex = lesson.slides.length - 1;
 
     const slide = lesson.slides[currentSlideIndex];
-    document.getElementById('slide-counter').textContent = `Slide \${currentSlideIndex + 1} de \${lesson.slides.length}`;
-    document.getElementById('slide-title').textContent = slide.title;
-    document.getElementById('slide-subtitle').textContent = slide.subtitle;
+
+    const counterEl = document.getElementById('slide-counter');
+    if (counterEl) {
+        counterEl.textContent = 'Slide ' + (currentSlideIndex + 1) + ' de ' + lesson.slides.length;
+    }
+
+    const titleEl = document.getElementById('slide-title');
+    if (titleEl) titleEl.textContent = slide.title;
+
+    const subEl = document.getElementById('slide-subtitle');
+    if (subEl) subEl.textContent = slide.subtitle;
 
     const bulletsUl = document.getElementById('slide-bullets');
-    bulletsUl.innerHTML = slide.bullets.map(b => `<li>\${b}</li>`).join('');
+    if (bulletsUl) {
+        bulletsUl.innerHTML = slide.bullets.map(function(b) {
+            return '<li>' + b + '</li>';
+        }).join('');
+    }
 
-    document.getElementById('speaker-notes-text').textContent = slide.speakerNotes || 'Nenhuma nota adicional para este slide.';
+    const notesEl = document.getElementById('speaker-notes-text');
+    if (notesEl) {
+        notesEl.textContent = slide.speakerNotes || 'Nenhuma nota adicional para este slide.';
+    }
 }
 
 function nextSlide() {
@@ -202,6 +243,9 @@ function nextSlide() {
     if (lesson && lesson.slides) {
         currentSlideIndex = (currentSlideIndex + 1) % lesson.slides.length;
         renderSlide();
+        if (isPlayingAudio) {
+            speakCurrentSlide();
+        }
     }
 }
 
@@ -210,20 +254,27 @@ function prevSlide() {
     if (lesson && lesson.slides) {
         currentSlideIndex = (currentSlideIndex - 1 + lesson.slides.length) % lesson.slides.length;
         renderSlide();
+        if (isPlayingAudio) {
+            speakCurrentSlide();
+        }
     }
 }
 
 function nextLesson() {
     if (currentLessonIndex < allLessons.length - 1) {
+        stopAudioPlayback();
         loadLesson(currentLessonIndex + 1);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
-        alert('🎉 Parabéns! Você chegou ao final do curso Telecom Academy. Faça o download do seu livro oficial na aba de conclusão!');
+        alert('🎉 Parabéns! Você concluiu todas as 24 aulas do curso Telecom Academy. Faça o download do seu livro oficial na aba de encerramento!');
     }
 }
 
 function prevLesson() {
     if (currentLessonIndex > 0) {
+        stopAudioPlayback();
         loadLesson(currentLessonIndex - 1);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 }
 
@@ -282,15 +333,15 @@ function updateProgressBar() {
     const completed = completedLessons.size;
     const pct = Math.round((completed / total) * 100);
 
-    text.textContent = `Progresso: \${completed}/\${total} Aulas (\${pct}%)`;
-    fill.style.width = `\${Math.max(5, pct)}%`;
+    text.textContent = 'Progresso: ' + completed + '/' + total + ' Aulas (' + pct + '%)';
+    fill.style.width = Math.max(5, pct) + '%';
 }
 
 function switchMainTab(tabName) {
     currentTab = tabName;
 
     // Atualiza botões
-    document.querySelectorAll('.tab-btn').forEach(btn => {
+    document.querySelectorAll('.tab-btn').forEach(function(btn) {
         if (btn.getAttribute('data-tab') === tabName) {
             btn.classList.add('active');
         } else {
@@ -299,11 +350,11 @@ function switchMainTab(tabName) {
     });
 
     // Atualiza painéis
-    document.querySelectorAll('.tab-pane').forEach(pane => {
+    document.querySelectorAll('.tab-pane').forEach(function(pane) {
         pane.classList.remove('active');
     });
 
-    const targetPane = document.getElementById(`tab-\${tabName}`);
+    const targetPane = document.getElementById('tab-' + tabName);
     if (targetPane) {
         targetPane.classList.add('active');
     }
@@ -314,7 +365,7 @@ function switchDiagram(type) {
     const buttons = document.querySelectorAll('.diag-btn');
     if (!img) return;
 
-    buttons.forEach(btn => btn.classList.remove('active'));
+    buttons.forEach(function(btn) { btn.classList.remove('active'); });
 
     const map = {
         'bancada': { file: 'img/diagrama-bancada-rf.svg', idx: 0 },
@@ -333,72 +384,173 @@ function switchDiagram(type) {
 }
 
 function filterLessons() {
-    const query = (document.getElementById('curriculum-search')?.value || '').toLowerCase().trim();
+    const input = document.getElementById('curriculum-search');
+    const query = (input ? input.value : '').toLowerCase().trim();
+
     if (!query) {
-        document.querySelectorAll('.lesson-item').forEach(el => el.style.display = 'flex');
+        document.querySelectorAll('.lesson-item').forEach(function(el) {
+            el.style.display = 'flex';
+        });
         return;
     }
 
-    allLessons.forEach(l => {
-        const item = document.getElementById(`lesson-item-\${l.id}`);
+    allLessons.forEach(function(l) {
+        const item = document.getElementById('lesson-item-' + l.id);
         if (!item) return;
 
         const match = l.title.toLowerCase().includes(query) ||
                       l.tag.toLowerCase().includes(query) ||
-                      l.theoryText.toLowerCase().includes(query);
+                      (l.theoryText && l.theoryText.toLowerCase().includes(query));
 
         item.style.display = match ? 'flex' : 'none';
     });
 }
 
+// -------------------------------------------------------------
+// MOTOR DE ÁUDIO INTEGRADO (Web Speech API + Áudio Studio)
+// -------------------------------------------------------------
 function initAudioEvents() {
     const audio = document.getElementById('lesson-audio');
-    const timeDisplay = document.getElementById('audio-time');
-    const btn = document.getElementById('btn-audio-play');
-    if (!audio) return;
-
-    audio.addEventListener('timeupdate', () => {
-        const cur = formatTime(audio.currentTime);
-        const dur = formatTime(audio.duration || 840);
-        if (timeDisplay) timeDisplay.textContent = `\${cur} / \${dur}`;
-    });
-
-    audio.addEventListener('ended', () => {
-        if (btn) btn.textContent = '▶ Ouvir Novamente';
-    });
+    if (audio) {
+        audio.addEventListener('ended', function() {
+            stopAudioPlayback();
+        });
+    }
 }
 
 function toggleAudio() {
-    const audio = document.getElementById('lesson-audio');
-    const btn = document.getElementById('btn-audio-play');
-    if (!audio) return;
-
-    if (audio.paused) {
-        audio.play().then(() => {
-            if (btn) btn.textContent = '⏸ Pausar Áudio';
-        }).catch(e => {
-            console.log('Audio autoplay blocked or file unavailable:', e);
-            if (btn) btn.textContent = '⏸ Áudio em Execução';
-        });
+    if (isPlayingAudio) {
+        stopAudioPlayback();
     } else {
-        audio.pause();
-        if (btn) btn.textContent = '▶ Continuar Áudio';
+        startAudioPlayback();
     }
+}
+
+function startAudioPlayback() {
+    const btn = document.getElementById('btn-audio-play');
+    isPlayingAudio = true;
+    if (btn) btn.textContent = '⏸ Pausar Áudio';
+
+    // Dispara a narração da aula / slide atual
+    speakCurrentSlide();
+
+    // Inicia contador de tempo
+    if (audioTimer) clearInterval(audioTimer);
+    audioTimer = setInterval(function() {
+        audioSecondsElapsed++;
+        updateAudioTimeDisplay();
+    }, 1000);
+}
+
+function stopAudioPlayback() {
+    const btn = document.getElementById('btn-audio-play');
+    isPlayingAudio = false;
+    if (btn) btn.textContent = '▶ Ouvir Aula';
+
+    if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+    }
+
+    const audio = document.getElementById('lesson-audio');
+    if (audio && !audio.paused) {
+        audio.pause();
+    }
+
+    if (audioTimer) {
+        clearInterval(audioTimer);
+        audioTimer = null;
+    }
+}
+
+function speakCurrentSlide() {
+    if (!('speechSynthesis' in window)) {
+        // Fallback para arquivo de áudio HTML5 nativo
+        const audio = document.getElementById('lesson-audio');
+        if (audio) {
+            audio.play().catch(function(e) {
+                console.log('Audio fallback error:', e);
+            });
+        }
+        return;
+    }
+
+    window.speechSynthesis.cancel();
+
+    const lesson = allLessons[currentLessonIndex];
+    if (!lesson) return;
+
+    let textToSpeak = '';
+    if (lesson.slides && lesson.slides[currentSlideIndex]) {
+        const s = lesson.slides[currentSlideIndex];
+        textToSpeak = 'Aula: ' + lesson.title + '. ' +
+                      'Slide ' + (currentSlideIndex + 1) + ': ' + s.title + '. ' +
+                      s.subtitle + '. ' +
+                      'Pontos principais: ' + s.bullets.join('. ') + '. ' +
+                      'Notas técnicas do instrutor: ' + s.speakerNotes;
+    } else {
+        textToSpeak = 'Aula: ' + lesson.title + '. ' + (lesson.tag || '');
+    }
+
+    const utterance = new SpeechSynthesisUtterance(textToSpeak);
+    utterance.lang = 'pt-BR';
+    utterance.rate = 1.05;
+    utterance.pitch = 1.0;
+
+    // Seleciona voz em português se disponível
+    const voices = window.speechSynthesis.getVoices();
+    const ptVoice = voices.find(function(v) { return v.lang.includes('pt') || v.lang.includes('BR'); });
+    if (ptVoice) {
+        utterance.voice = ptVoice;
+    }
+
+    utterance.onend = function() {
+        // Se houver próximo slide, pode avançar automaticamente
+        const btn = document.getElementById('btn-audio-play');
+        if (currentSlideIndex < (lesson.slides.length - 1)) {
+            nextSlide();
+        } else {
+            stopAudioPlayback();
+        }
+    };
+
+    utterance.onerror = function(err) {
+        console.log('Speech synthesis error, fallback to audio element:', err);
+        const audio = document.getElementById('lesson-audio');
+        if (audio) {
+            audio.play().catch(function() {});
+        }
+    };
+
+    currentUtterance = utterance;
+    window.speechSynthesis.speak(utterance);
+}
+
+function updateAudioTimeDisplay() {
+    const timeDisplay = document.getElementById('audio-time');
+    if (!timeDisplay) return;
+
+    const cur = formatTime(audioSecondsElapsed);
+    timeDisplay.textContent = cur + ' / 14:00';
 }
 
 function formatTime(secs) {
     if (isNaN(secs)) return '00:00';
     const m = Math.floor(secs / 60).toString().padStart(2, '0');
     const s = Math.floor(secs % 60).toString().padStart(2, '0');
-    return `\${m}:\${s}`;
+    return m + ':' + s;
 }
 
-// Simulador de Roteamento SIP / E.164
+// -------------------------------------------------------------
+// SIMULADOR DE ROTEAMENTO SIP / E.164
+// -------------------------------------------------------------
 function simulateCall() {
-    const caller = document.getElementById('sim-caller').value;
-    const called = document.getElementById('sim-called').value;
+    const callerEl = document.getElementById('sim-caller');
+    const calledEl = document.getElementById('sim-called');
     const resBox = document.getElementById('sim-result-box');
-    if (!resBox) return;
+    if (!callerEl || !calledEl || !resBox) return;
+
+    const caller = callerEl.value;
+    const called = calledEl.value;
 
     let rota = '';
     let tipo = '';
@@ -447,33 +599,25 @@ function simulateCall() {
         codec = 'Transcodificação C++: G.711u (SP) ↔ G.711a (PCMA Porto)';
         latencia = '~88 ms';
         economia = '80% (Breakout Local Norte PT)';
+    } else {
+        tipo = '🌐 Roteamento Internacional Genérico';
+        rota = 'Yate SP -> Trunk Global -> Terminação E.164 Destino ' + called;
+        latencia = '~100 ms';
+        economia = '65% (LCR Transatlântico)';
     }
 
     resBox.style.display = 'block';
-    resBox.innerHTML = `
-        <div class="result-badge">\${tipo}</div>
-        <div class="call-metrics-grid">
-            <div class="metric-item">
-                <span class="m-label">Origem:</span>
-                <span class="m-val">\${caller}</span>
-            </div>
-            <div class="metric-item">
-                <span class="m-label">Destino:</span>
-                <span class="m-val">\${called}</span>
-            </div>
-            <div class="metric-item">
-                <span class="m-label">Latência Estimada:</span>
-                <span class="m-val highlight">\${latencia}</span>
-            </div>
-            <div class="metric-item">
-                <span class="m-label">Economia Gerada:</span>
-                <span class="m-val green">\${economia}</span>
-            </div>
-        </div>
-        <div class="route-path-box">
-            <strong>Caminho de Sinalização (Hop-by-Hop LCR):</strong>
-            <p><code>\${rota}</code></p>
-            <p><strong>Codec & Mídia:</strong> <code>\${codec}</code></p>
-        </div>
-    `;
+    resBox.innerHTML = 
+        '<div class="result-badge">' + tipo + '</div>' +
+        '<div class="call-metrics-grid">' +
+        '<div class="metric-item"><span class="m-label">Origem:</span><span class="m-val">' + caller + '</span></div>' +
+        '<div class="metric-item"><span class="m-label">Destino:</span><span class="m-val">' + called + '</span></div>' +
+        '<div class="metric-item"><span class="m-label">Latência Estimada:</span><span class="m-val highlight">' + latencia + '</span></div>' +
+        '<div class="metric-item"><span class="m-label">Economia Gerada:</span><span class="m-val green">' + economia + '</span></div>' +
+        '</div>' +
+        '<div class="route-path-box">' +
+        '<strong>Caminho de Sinalização (Hop-by-Hop LCR):</strong>' +
+        '<p><code>' + rota + '</code></p>' +
+        '<p><strong>Codec & Mídia:</strong> <code>' + codec + '</code></p>' +
+        '</div>';
 }

@@ -91,7 +91,10 @@
                         </div>
                     </div>
                     <div class="audio-controls">
-                        <audio id="lesson-audio" src="audio/nb_telecom_mvno_2026.m4a" preload="none"></audio>
+                        <audio id="lesson-audio" preload="auto">
+                            <source src="audio/nb_telecom_mvno_2026.wav" type="audio/wav">
+                            <source src="audio/nb_telecom_mvno_2026.m4a" type="audio/mp4">
+                        </audio>
                         <button id="btn-audio-play" class="btn-audio" onclick="toggleAudio()">▶ Ouvir Aula</button>
                         <span id="audio-time" class="audio-time">00:00 / 14:00</span>
                     </div>

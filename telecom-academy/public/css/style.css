@@ -975,3 +975,69 @@ pre code {
 .btn-accent:hover {
     background: var(--accent-hover);
 }
+
+/* Responsividade Mobile & Tablet */
+@media (max-width: 992px) {
+    .main-layout {
+        flex-direction: column;
+    }
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: static;
+        max-height: 380px;
+        border-right: none;
+        border-bottom: 2px solid var(--border-color);
+    }
+    .app-header {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+    }
+    .header-center {
+        margin: 0;
+        max-width: 100%;
+    }
+    .header-right {
+        justify-content: space-between;
+        flex-wrap: wrap;
+    }
+    .content-area {
+        padding: 16px;
+    }
+    .player-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    .slide-nav-controls {
+        width: 100%;
+        justify-content: space-between;
+    }
+    .audio-podcast-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+    .audio-controls {
+        width: 100%;
+        justify-content: space-between;
+    }
+    .content-tabs-bar {
+        overflow-x: auto;
+        white-space: nowrap;
+        padding-bottom: 4px;
+    }
+    .tab-btn {
+        flex-shrink: 0;
+    }
+    .lesson-nav-footer {
+        flex-direction: column;
+        gap: 12px;
+    }
+    .lesson-nav-footer .btn {
+        width: 100%;
+        text-align: center;
+    }
+}
+

@@ -1507,6 +1507,73 @@ CSeq: 101 INVITE
 Warning: 304 10.35.1.1 "Incompatible Media Capabilities (No common codec)"`
                     },
                     diagramType: "global"
+                },
+                {
+                    id: "5.4",
+                    title: "5.4 Laboratório de Análise Forense de Tráfego de Voz em Tempo Real: Jitter, Delay e MOS Score",
+                    duration: "30 min",
+                    tag: "Métricas & QoS",
+                    slides: [
+                        {
+                            title: "Qualidade de Serviço (QoS) em Voz sobre IP",
+                            subtitle: "Parâmetros Críticos: Jitter, Latência Unidirecional e Perda de Pacotes",
+                            bullets: [
+                                "Latência Unidirecional (One-Way Delay): Limite aceitável ITU-T G.114 de até 150 ms para conversação natural.",
+                                "Jitter (Variação de Atraso): Como o buffer de jitter suaviza oscilações de rede sem introduzir eco perceptível.",
+                                "Packet Loss (Perda de Pacotes): Impacto de perdas acima de 1% na perda de inteligibilidade da fala humana.",
+                                "Cálculo do MOS (Mean Opinion Score): Metodologia do E-Model (ITU-T G.107) mapeando R-factor para nota de 1 a 5."
+                            ],
+                            speakerNotes: "O cálculo do MOS Score demonstra numericamente para os diretores se a rota de menor custo (LCR) mantém a excelência acústica exigida pelo padrão de telecomunicações."
+                        },
+                        {
+                            title: "Captura de Fluxos RTP no Wireshark",
+                            subtitle: "Análise Forense e Gráfico de Análise de Fluxo RTP",
+                            bullets: [
+                                "Menu Telephony -> RTP -> RTP Streams no Wireshark para isolamento de canais bidirecionais de áudio.",
+                                "Inspeção de Sequence Number e Timestamps: Detecção de pacotes fora de ordem e duplicação de frames.",
+                                "Estatísticas de Jitter Máximo e Médio por canal de voz.",
+                                "Player RTP Integrado: Reprodução direta do áudio decodificado capturado na interface de rede."
+                            ],
+                            speakerNotes: "O Wireshark permite reconstruir o áudio PCM transmitido na rede e verificar se houve clipping ou distorção causada por transcodificação inadequada."
+                        }
+                    ],
+                    theoryText: `
+                        <h3>1. Métricas de Qualidade de Serviço segundo a ITU-T</h3>
+                        <p>Para uma operadora móvel virtual (MVNO), o custo reduzido não pode comprometer a experiência do usuário final. A norma <strong>ITU-T G.114</strong> estipula que o atraso de transmissão unidirecional (one-way latency) não deve ultrapassar <strong>150 ms</strong> para que a interatividade da conversação ocorra sem sobreposições acidentais de fala.</p>
+
+                        <p>O <strong>Jitter</strong> representa a variabilidade desse atraso entre pacotes subsequentes. Quando o jitter excede a capacidade do jitter buffer do softphone MicroSIP ou do transceptor Yate, pacotes de voz são descartados por atraso (late packets), gerando cortes metálicos ou silêncio.</p>
+
+                        <h3>2. O E-Model e a Escala MOS</h3>
+                        <p>O algoritmo do <strong>E-Model (ITU-T G.107)</strong> calcula o Fator R de transmissão combinando ruído, distorções de codec e perdas:</p>
+                        <ul>
+                            <li><strong>MOS 4.3 a 4.5:</strong> Excelente (qualidade ISDN / HD Voice com OPUS ou G.711 sem perda).</li>
+                            <li><strong>MOS 4.0 a 4.2:</strong> Muito bom (padrão de telefonia celular comercial).</li>
+                            <li><strong>MOS < 3.6:</strong> Insatisfatório (necessidade de intervenção na rota de rede ou ajuste de QoS DiffServ DSCP EF - valor 46).</li>
+                        </ul>
+                    `,
+                    softwareConfig: {
+                        software: "Yate QoS Engine",
+                        file: "ysipchan.conf",
+                        code: `[general]
+; Marcação DSCP para prioridade estrita de sinalização SIP e mídia RTP
+sip_tos=184   ; Expedited Forwarding (DSCP 46)
+rtp_tos=184   ; Expedited Forwarding (DSCP 46)
+buffer_size=80 ; Jitter buffer inicial em milissegundos`,
+                        explanation: "Parâmetros em ysipchan.conf para garantia de prioridade de QoS (DiffServ EF) e dimensionamento de buffer de jitter."
+                    },
+                    wiresharkAnalysis: {
+                        protocol: "RTP Statistics",
+                        summary: "Relatório de Qualidade de Mídia RTP extraído via Wireshark",
+                        rawTrace: `======================================================
+RTP Stream Analysis: 10.11.0.50:16402 -> 10.35.1.1:16402
+Payload Type: ITU-T G.711 PCMA (8)
+Total Packets: 1,450
+Lost Packets: 0 (0.0%)
+Max Jitter: 2.14 ms | Mean Jitter: 0.82 ms
+Estimated MOS: 4.41 [HD Telephony Standard]
+======================================================`
+                    },
+                    diagramType: "global"
                 }
             ]
         },
