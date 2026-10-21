@@ -1,0 +1,107 @@
+version: '3.8'
+
+# Modo MACVLAN para servidores Linux dedicados / Produção
+# Permite que cada elemento de Telecom tenha endereço MAC e IP próprio na rede física / VLAN
+
+services:
+  telecom-academy:
+    build:
+      context: ../telecom-academy
+      dockerfile: Dockerfile
+    container_name: telecom-academy
+    restart: unless-stopped
+    networks:
+      telecom_macvlan:
+        ipv4_address: 192.168.100.50
+
+  mongodb:
+    image: mongo:6.0
+    container_name: telecom-mongodb
+    restart: unless-stopped
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      telecom_macvlan:
+        ipv4_address: 192.168.100.51
+
+  open5gs-core:
+    image: gradiant/open5gs:latest
+    container_name: telecom-open5gs-core
+    restart: unless-stopped
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun
+    depends_on:
+      - mongodb
+    environment:
+      - DB_URI=mongodb://192.168.100.51/open5gs
+    networks:
+      telecom_macvlan:
+        ipv4_address: 192.168.100.52
+
+  open5gs-webui:
+    image: gradiant/open5gs-webui:latest
+    container_name: telecom-open5gs-webui
+    restart: unless-stopped
+    depends_on:
+      - mongodb
+    environment:
+      - DB_URI=mongodb://192.168.100.51/open5gs
+    networks:
+      telecom_macvlan:
+        ipv4_address: 192.168.100.53
+
+  yate-core:
+    build:
+      context: ./yate-core
+      dockerfile: Dockerfile
+    container_name: telecom-yate-core
+    restart: unless-stopped
+    networks:
+      telecom_macvlan:
+        ipv4_address: 192.168.100.54
+
+  yate-node-controller:
+    build:
+      context: ./yate-node
+      dockerfile: Dockerfile
+    container_name: telecom-yate-node
+    restart: unless-stopped
+    depends_on:
+      - yate-core
+    environment:
+      - YATE_HOST=192.168.100.54
+      - YATE_PORT=5039
+    networks:
+      telecom_macvlan:
+        ipv4_address: 192.168.100.55
+
+  ueransim:
+    image: gradiant/ueransim:latest
+    container_name: telecom-ueransim
+    restart: "no"
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun
+    depends_on:
+      - open5gs-core
+    networks:
+      telecom_macvlan:
+        ipv4_address: 192.168.100.56
+
+networks:
+  telecom_macvlan:
+    driver: macvlan
+    driver_opts:
+      parent: eth0 # Ajuste para a interface física da sua máquina Linux (ex: enp3s0, eth0)
+    ipam:
+      config:
+        - subnet: 192.168.100.0/24
+          gateway: 192.168.100.1
+
+volumes:
+  mongodb_data:

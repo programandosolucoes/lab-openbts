@@ -1,0 +1,12 @@
+{
+  "name": "telecom-academy",
+  "version": "1.0.0",
+  "description": "Plataforma Educacional Interativa de Telecomunicações, Yate, OpenBTS e MVNO Global",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
