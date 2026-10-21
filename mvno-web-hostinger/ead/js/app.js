@@ -1,338 +1,479 @@
-let lessons = [];
+/**
+ * @file app.js
+ * @description Motor de Execução da Plataforma EAD Telecom Academy Pro
+ * Integração do currículo de 24 aulas, player de slides interativos, análise Wireshark,
+ * simulador de roteamento LCR e conformidade com a esteira MikroTik do Carlos.
+ */
+
+let allLessons = [];
 let currentLessonIndex = 0;
+let currentSlideIndex = 0;
 let completedLessons = new Set();
+let currentTab = 'theory';
 
-const lessonDetails = [
-    {
-        content: `
-            <h2>1. Do Circuito ao Pacote (A Morte das Caixas Proprietárias)</h2>
-            <p>Durante quase 100 anos, uma rede telefônica exigia equipamentos caros e proprietários (Siemens, Ericsson, Lucent) onde a inteligência e o transporte eram inseparáveis. Uma chamada reservava um circuito físico permanente de 64 kbit/s mesmo durante o silêncio.</p>
-            <p>Com as <strong>Redes de Próxima Geração (NGN)</strong>, a telefonia virou apenas mais uma aplicação sobre pacotes IP. A inteligência migrou dos comutadores pesados para o <strong>software de uso geral</strong>.</p>
+// Inicialização ao carregar o DOM
+document.addEventListener('DOMContentLoaded', () => {
+    initCurriculum();
+    renderSidebar();
+    loadLesson(0);
+    initAudioEvents();
+});
 
-            <div class="alert-box">
-                <div class="alert-title">⚖️ Princípio da Legalidade Absoluta (Marco Legal Brasileiro)</div>
-                <p>O <strong>art. 183 da Lei Geral de Telecomunicações (Lei 9.472/1997)</strong> tipifica como crime desenvolver clandestinamente telecomunicações, com pena de 2 a 4 anos de detenção. A alegação de "estudo acadêmico" <strong>não</strong> afasta o crime se você transmitir sinal no ar sem título habilitante.</p>
-                <p><strong>A regra de ouro da bancada:</strong> Para estudar sem riscos jurídicos, a bancada deve ser <strong>integralmente cabeada com atenuadores coaxiais de 60 dB e sem nenhuma antena instalada</strong>. Assim, a energia eletromagnética nunca vaza para o meio externo.</p>
-            </div>
-
-            <h2>2. Serviço de Telecomunicações vs. Serviço de Valor Adicionado (SVA)</h2>
-            <ul>
-                <li><strong>SVA (Serviço de Valor Adicionado):</strong> PABX corporativo, URAs, correio de voz e ramais internos rodando sobre a internet da própria empresa. <em>Não requer outorga de telecomunicações da Anatel.</em></li>
-                <li><strong>SMP (Serviço Móvel Pessoal):</strong> Oferta de chamadas para números públicos a terceiros com remuneração e uso de radiofrequência. <em>Exige outorga própria ou contrato de MVNO regulado.</em></li>
-            </ul>
-        `
-    },
-    {
-        content: `
-            <h2>1. Por Que o Yate é o Motor Favorito para Redes Móveis?</h2>
-            <p>O <strong>Asterisk</strong> nasceu para PABX corporativo TDM/SIP clássico, centrado em canais bidirecionais rígidos. Já o <strong>Yate (Yet Another Telephony Engine)</strong> foi desenhado em C++ com uma arquitetura puramente orientada a <strong>mensagens assíncronas</strong>.</p>
-            <p>Para o núcleo do Yate, uma chamada telefônica, uma mensagem SMS ou um registro de assinante 4G são a mesma coisa: um despacho de mensagens nomeadas com parâmetros <code>chave=valor</code>.</p>
-
-            <h3>Fluxo de Mensagens Principais:</h3>
-            <ul>
-                <li><code>call.route</code>: Disparada quando alguém disca. Permite ao roteador decidir o destino da chamada.</li>
-                <li><code>call.execute</code>: Disparada para criar o canal de saída efetivo até o destino.</li>
-                <li><code>call.answered</code>: Momento exato em que o destino atende (início de tarifação).</li>
-                <li><code>call.drop</code>: Liberação dos recursos e corte da chamada.</li>
-            </ul>
-
-            <h2>2. Como o Node.js Controla o Yate via ExtModule</h2>
-            <p>O módulo <code>extmodule</code> permite que um script em Node.js se conecte via socket TCP local (porta <code>5039</code>) e assuma o controle do fluxo:</p>
-            <pre><code>// Interceptando a chamada no Node.js
-client.on('message', (msg) => {
-    if (msg.name === 'call.route') {
-        const caller = msg.params.caller;
-        const called = msg.params.called;
-        console.log(\`Chamada recebida de \${caller} para \${called}\`);
-        
-        // Regra inteligente B2B: Roteia para o gateway PSTN
-        const rota = \`sip/sip:\${called}@gw-pstn.operadora.com\`;
-        client.send(\`%%>message:\${msg.msgId}:true::\${rota}:handled=true\`);
+function initCurriculum() {
+    allLessons = [];
+    if (typeof courseCurriculum !== 'undefined' && courseCurriculum.modules) {
+        courseCurriculum.modules.forEach(mod => {
+            mod.lessons.forEach(lesson => {
+                allLessons.push({
+                    ...lesson,
+                    moduleTitle: mod.title
+                });
+            });
+        });
     }
-});</code></pre>
-            <div class="alert-box warning">
-                <div class="alert-title">🔒 Regra de Segurança Crítica (Prof. Delphini)</div>
-                <p>O socket do <code>extmodule.conf</code> deve <strong>sempre</strong> escutar em <code>127.0.0.1</code> e nunca em <code>0.0.0.0</code>. Quem tem acesso a essa porta tem controle total sobre o áudio e a sinalização da central.</p>
-            </div>
-        `
-    },
-    {
-        content: `
-            <h2>1. A Sacada Genial do OpenBTS</h2>
-            <p>No GSM clássico de operadora, a antena (BTS) fala com um controlador (BSC) via interface proprietária Abis, que por sua vez se conecta à central móvel (MSC) via cabos E1 e sinalização pesada SS7.</p>
-            <p>O <strong>OpenBTS</strong> colapsou toda essa hierarquia: ele faz a antena falar <strong>diretamente SIP</strong> pela rede IP! Para a central telefônica, uma torre de celular vira um mero "ramal SIP".</p>
 
-            <h2>2. É Possível Usar o OpenBTS Sem Antena Física? (Drivers Virtuais e de Rede)</h2>
-            <p><strong>SIM!</strong> Você não precisa de uma antena de R$ 15 mil para aprender:</p>
-            <ul>
-                <li><strong>YateBTS com <code>dummyradio.yate</code>:</strong> O YateBTS possui um módulo transceptor virtual em software que simula as rajadas de rádio e canais lógicos GSM internamente na CPU sem nenhuma placa de rádio conectada.</li>
-                <li><strong>Transceiver UDP de Rede:</strong> No OpenBTS e no YateBTS, a camada de rádio (MBTS) comunica-se com a camada de controle através de sockets UDP locais na porta <code>5700</code>. Você pode injetar e capturar quadros GSM via rede Ethernet!</li>
-                <li><strong>srsRAN com ZeroMQ (ZMQ):</strong> Em redes LTE/5G modernas, a camada física de radiofrequência é transmitida via sockets ZeroMQ (amostras I/Q sobre TCP/VLAN). O computador roda a antena e o celular virtual trocando rádio digital por dentro do Linux.</li>
-            </ul>
-        `
-    },
-    {
-        content: `
-            <h2>1. Do 4G LTE ao 5G Standalone (Open5GS)</h2>
-            <p>A partir do 4G LTE e do 5G, toda a telefonia celular passa a ser comutação de pacotes pura. A voz não trafega mais em circuito dedicado: ela viaja como pacotes de dados através do <strong>VoLTE / VoNR</strong> (baseados em SIP/IMS).</p>
-            <p>O <strong>Open5GS</strong> é a implementação aberta em C mais madura do mundo para:</p>
-            <ul>
-                <li><strong>AMF / MME:</strong> Gerenciamento de mobilidade e autenticação.</li>
-                <li><strong>SMF / SGW-C:</strong> Gestão de sessão de dados e alocação de IPs nas APNs.</li>
-                <li><strong>UPF / PGW-U:</strong> Encaminhamento do tráfego de dados de alta velocidade.</li>
-                <li><strong>UDM / UDR / HSS:</strong> Base mestra de chaves criptográficas e identidades dos chips.</li>
-            </ul>
-
-            <h2>2. Como o UERANSIM Simula Celulares 5G no Laboratório Docker</h2>
-            <p>No nosso laboratório Docker, o container <code>telecom-ueransim</code> conecta na porta SCTP <code>38412</code> do Open5GS:</p>
-            <ol>
-                <li>Simula a antena 5G (gNodeB) se registrando no AMF.</li>
-                <li>Simula o aparelho celular (UE) enviando o IMSI de teste.</li>
-                <li>Executa a autenticação criptográfica <strong>Milenage</strong> contra o banco MongoDB.</li>
-                <li>Cria no kernel da máquina a interface virtual <code>uesimtun0</code>.</li>
-            </ol>
-            <pre><code># Testando a navegação de dados dentro da rede celular virtual:
-$ ping -I uesimtun0 8.8.8.8
-PING 8.8.8.8 (8.8.8.8) from 10.45.0.2 uesimtun0: 56(84) bytes of data.
-64 bytes from 8.8.8.8: icmp_seq=1 ttl=115 time=14.2 ms</code></pre>
-        `
-    },
-    {
-        content: `
-            <h2>1. Topologia de 3 Países e 2 Cidades Cada</h2>
-            <p>Em uma operadora real ou MVNO global, o roteamento segue a hierarquia internacional <strong>E.164</strong>:</p>
-            <ul>
-                <li><strong>Brasil (MCC 724 / DDI +55):</strong> POP São Paulo (DDD 11) e POP Rio de Janeiro (DDD 21).</li>
-                <li><strong>Estados Unidos (MCC 310 / DDI +1):</strong> POP Miami (305) e POP Nova York (212).</li>
-                <li><strong>Portugal (MCC 268 / DDI +351):</strong> POP Lisboa (21) e POP Porto (22).</li>
-            </ul>
-
-            <h2>2. Roteamento de Menor Custo (LCR - Least Cost Routing)</h2>
-            <p>Quando um assinante disca de São Paulo para Miami (<code>+1 305 555 1234</code>):</p>
-            <ol>
-                <li>O controlador Yate analisa o prefixo internacional <code>+1 305</code>.</li>
-                <li>Em vez de entregar para uma operadora de trânsito internacional cara no Brasil, ele envia a chamada através de um <strong>túnel SIP IPsec interno diretamente para o POP de Miami (172.28.20.1)</strong>.</li>
-                <li>O POP de Miami injeta a chamada na PSTN local americana a custo de chamada local. É assim que grandes MVNOs e PABX corporativos globais reduzem os custos de telefonia em até 80%!</li>
-            </ol>
-        `
-    },
-    {
-        content: `
-            <h2>1. Montagem Física de Bancada Cabeada (Conforme o Livro do Prof. Delphini)</h2>
-            <p>Quando você decidir testar com aparelhos celulares físicos e chips reais gravados com <em>PySIM</em>, a montagem deve seguir rigorosamente a seguinte cadeia:</p>
-            <ol>
-                <li><strong>Transceptor SDR (PlutoSDR ou bladeRF):</strong> Conectado via USB 3.0 ao computador.</li>
-                <li><strong>Desconecte todas as antenas:</strong> Jamais coloque antena transmissora no SDR em bancada de laboratório.</li>
-                <li><strong>Dois Atenuadores Coaxiais de 30 dB (Total: 60 dB):</strong> Conectados em cascata diretamente na saída SMA do SDR. Isso reduz a potência de 1 mW (0 dBm) para 1 picowatt (-60 dBm), impedindo qualquer fuga de sinal.</li>
-                <li><strong>Cabo Coaxial até o Aparelho de Teste:</strong> Ligado na entrada de antena do modem ou telefone de teste.</li>
-            </ol>
-
-            <h2>2. O Caminho para Lançar sua MVNO em Fevereiro (Resolução Anatel 777/2025)</h2>
-            <p>Para cumprir o prazo de <strong>fevereiro</strong> citado pelo Elton nos áudios:</p>
-            <ul>
-                <li><strong>Modelo Recomendado: MVNO Credenciada (Light MVNO):</strong>
-                    Você celebra um <em>Contrato de Representação</em> com uma agregadora credenciada (como Surf Telecom, Arqia/Datora ou Telecall). O contrato é protocolado na Anatel.
-                </li>
-                <li><strong>Seu Diferencial Tecnológico:</strong>
-                    Enquanto a operadora fornece o sinal de rádio e os chips, você entrega para as empresas clientes o <strong>PABX na nuvem integrado ao chip móvel</strong> (desenvolvido no Yate + Node.js), unificando ramais do escritório e celulares corporativos na mesma plataforma!
-                </li>
-            </ul>
-
-            <div class="alert-box success" style="margin-top: 28px;">
-                <div class="alert-title">📖 Baixe o Livro Completo da Formação em Formato EPUB</div>
-                <p>O livro <strong>"Engenharia de Telecomunicações e MVNO Convergente"</strong> de autoria de <strong>Carlos Lopes</strong> está disponível para leitura em qualquer dispositivo (e-reader, smartphone, tablet ou PC).</p>
-                <div style="margin-top: 14px;">
-                    <a href="/downloads/Engenharia_Telecom_MVNO_Convergente_Carlos_Lopes.epub" class="btn btn-accent" download>
-                        📥 Baixar Livro Oficial (.EPUB)
-                    </a>
-                </div>
-            </div>
-        `
-    }
-];
-
-async function loadLessons() {
+    // Carrega progresso salvo
     try {
-        const resp = await fetch('/api/lessons');
-        lessons = await resp.json();
-        renderSidebar();
-        renderLesson(0);
-    } catch (e) {
-        console.error('Erro carregando aulas:', e);
-    }
+        const saved = localStorage.getItem('telecom_academy_completed');
+        if (saved) {
+            completedLessons = new Set(JSON.parse(saved));
+        }
+    } catch (e) {}
+
+    updateProgressBar();
 }
 
 function renderSidebar() {
-    const nav = document.getElementById('module-nav');
-    nav.innerHTML = '';
-    lessons.forEach((l, index) => {
-        const isCompleted = completedLessons.has(index);
-        const a = document.createElement('a');
-        a.className = `nav-item ${index === currentLessonIndex ? 'active' : ''} ${isCompleted ? 'completed' : ''}`;
-        a.onclick = () => {
-            showView('lesson');
-            renderLesson(index);
-        };
-        a.innerHTML = `
-            <span class="module-num">${isCompleted ? '✓' : index + 1}</span>
-            <span>${l.title.split(':')[0]}</span>
+    const accordion = document.getElementById('module-accordion');
+    if (!accordion || typeof courseCurriculum === 'undefined') return;
+
+    accordion.innerHTML = '';
+
+    courseCurriculum.modules.forEach((mod, modIdx) => {
+        const modCard = document.createElement('div');
+        modCard.className = 'module-card';
+        modCard.id = `mod-card-${mod.id}`;
+
+        const isFirst = modIdx === 0;
+
+        modCard.innerHTML = `
+            <div class="module-header \${isFirst ? 'open' : ''}" onclick="toggleModuleAccordion(\${mod.id})">
+                <div class="module-title-area">
+                    <span class="module-badge">Módulo \${mod.id}</span>
+                    <strong class="module-name">\${mod.title.replace(/^Módulo \\d+: /, '')}</strong>
+                    <span class="module-count">\${mod.lessons.length} Aulas</span>
+                </div>
+                <span class="accordion-arrow">\${isFirst ? '▼' : '▶'}</span>
+            </div>
+            <div class="module-lessons-list \${isFirst ? 'show' : ''}" id="lessons-list-\${mod.id}">
+                \${mod.lessons.map(lesson => {
+                    const globalIdx = allLessons.findIndex(l => l.id === lesson.id);
+                    const isDone = completedLessons.has(lesson.id);
+                    return `
+                        <div class="lesson-item \${globalIdx === currentLessonIndex ? 'active' : ''}" 
+                             id="lesson-item-\${lesson.id}"
+                             onclick="selectLessonById('\${lesson.id}')">
+                            <input type="checkbox" class="lesson-checkbox" 
+                                   \${isDone ? 'checked' : ''} 
+                                   onclick="event.stopPropagation(); toggleLessonDone('\${lesson.id}')">
+                            <div class="lesson-info">
+                                <span class="lesson-title-text">\${lesson.title}</span>
+                                <span class="lesson-pill-duration">\${lesson.duration}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
         `;
-        nav.appendChild(a);
+
+        accordion.appendChild(modCard);
     });
-    updateProgress();
 }
 
-function renderLesson(index) {
+function toggleModuleAccordion(modId) {
+    const list = document.getElementById(`lessons-list-\${modId}`);
+    const card = document.getElementById(`mod-card-\${modId}`);
+    const header = card ? card.querySelector('.module-header') : null;
+    const arrow = header ? header.querySelector('.accordion-arrow') : null;
+
+    if (list) {
+        const isOpen = list.classList.contains('show');
+        if (isOpen) {
+            list.classList.remove('show');
+            header.classList.remove('open');
+            if (arrow) arrow.textContent = '▶';
+        } else {
+            list.classList.add('show');
+            header.classList.add('open');
+            if (arrow) arrow.textContent = '▼';
+        }
+    }
+}
+
+function selectLessonById(lessonId) {
+    const idx = allLessons.findIndex(l => l.id === lessonId);
+    if (idx !== -1) {
+        loadLesson(idx);
+    }
+}
+
+function loadLesson(index) {
+    if (index < 0 || index >= allLessons.length) return;
     currentLessonIndex = index;
-    const l = lessons[index];
-    const detail = lessonDetails[index] || { content: '<p>Conteúdo em atualização.</p>' };
+    currentSlideIndex = 0;
 
-    const slidesHtml = `
-        <div class="notebooklm-card">
-            <div class="notebooklm-header">
-                <span class="notebooklm-badge">🎙️ NotebookLM Deep Dive • Resumo em Áudio</span>
-                <span style="font-size: 0.8rem; color: #94a3b8;">Episódio de Análise Técnica</span>
-            </div>
-            <p style="font-size: 0.92rem; color: #e2e8f0; margin-bottom: 8px;">
-                Ouça o debate executivo sobre os pontos críticos do <strong>${l.title.split(':')[0]}</strong>, destacando as implicações na prática de operadora.
-            </p>
-            <div class="audio-player-mock">
-                <button class="btn-play-pause" onclick="toggleAudioMock(this)">▶</button>
-                <div class="audio-waveform" id="waveform">
-                    <span class="wave-bar active" style="height: 40%;"></span>
-                    <span class="wave-bar active" style="height: 70%;"></span>
-                    <span class="wave-bar active" style="height: 100%;"></span>
-                    <span class="wave-bar active" style="height: 50%;"></span>
-                    <span class="wave-bar active" style="height: 85%;"></span>
-                    <span class="wave-bar" style="height: 35%;"></span>
-                    <span class="wave-bar" style="height: 60%;"></span>
-                    <span class="wave-bar" style="height: 90%;"></span>
-                    <span class="wave-bar" style="height: 45%;"></span>
-                    <span class="wave-bar" style="height: 75%;"></span>
-                    <span class="wave-bar" style="height: 30%;"></span>
-                    <span class="wave-bar" style="height: 65%;"></span>
-                </div>
-                <span id="audio-time" style="font-family: monospace; font-size: 0.82rem; color: #94a3b8;">00:00 / 08:35</span>
-            </div>
-        </div>
-    `;
+    const lesson = allLessons[index];
 
-    document.getElementById('lesson-title').innerText = l.title;
-    document.getElementById('lesson-category').innerText = l.category;
-    document.getElementById('lesson-duration').innerText = `⏱️ ${l.duration}`;
-    document.getElementById('lesson-body').innerHTML = slidesHtml + detail.content;
+    // Atualiza metadados no topo
+    document.getElementById('active-lesson-title').textContent = lesson.title;
+    document.getElementById('active-lesson-duration').textContent = `⏱️ \${lesson.duration} • \${lesson.tag}`;
+    document.getElementById('player-lesson-tag').textContent = `\${lesson.id} • \${lesson.tag.toUpperCase()}`;
 
-    document.getElementById('btn-prev').disabled = index === 0;
-    document.getElementById('btn-next').disabled = index === lessons.length - 1;
+    // Atualiza Teoria
+    document.getElementById('active-lesson-theory').innerHTML = lesson.theoryText;
 
-    renderSidebar();
+    // Atualiza Configuração de Software
+    if (lesson.softwareConfig) {
+        document.getElementById('config-software-title').textContent = lesson.softwareConfig.software;
+        document.getElementById('config-software-file').textContent = lesson.softwareConfig.file;
+        document.getElementById('config-explanation').textContent = lesson.softwareConfig.explanation;
+        document.getElementById('config-code-block').textContent = lesson.softwareConfig.code;
+    }
+
+    // Atualiza Wireshark
+    if (lesson.wiresharkAnalysis) {
+        document.getElementById('wireshark-protocol-badge').textContent = lesson.wiresharkAnalysis.protocol;
+        document.getElementById('wireshark-summary').textContent = lesson.wiresharkAnalysis.summary;
+        document.getElementById('wireshark-raw-trace').textContent = lesson.wiresharkAnalysis.rawTrace;
+    }
+
+    // Atualiza Diagrama inicial
+    if (lesson.diagramType) {
+        switchDiagram(lesson.diagramType);
+    }
+
+    // Renderiza Slide atual
+    renderSlide();
+
+    // Atualiza seleção na Sidebar
+    document.querySelectorAll('.lesson-item').forEach(el => el.classList.remove('active'));
+    const activeItem = document.getElementById(`lesson-item-\${lesson.id}`);
+    if (activeItem) {
+        activeItem.classList.add('active');
+        // Garante que o accordion pai esteja aberto
+        const parentList = activeItem.closest('.module-lessons-list');
+        if (parentList && !parentList.classList.contains('show')) {
+            parentList.classList.add('show');
+            const modCard = parentList.closest('.module-card');
+            if (modCard) {
+                const header = modCard.querySelector('.module-header');
+                const arrow = header ? header.querySelector('.accordion-arrow') : null;
+                if (header) header.classList.add('open');
+                if (arrow) arrow.textContent = '▼';
+            }
+        }
+    }
+
+    // Atualiza botão de conclusão
+    updateCompleteButton();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function renderSlide() {
+    const lesson = allLessons[currentLessonIndex];
+    if (!lesson || !lesson.slides || lesson.slides.length === 0) return;
+
+    if (currentSlideIndex >= lesson.slides.length) currentSlideIndex = 0;
+    if (currentSlideIndex < 0) currentSlideIndex = lesson.slides.length - 1;
+
+    const slide = lesson.slides[currentSlideIndex];
+    document.getElementById('slide-counter').textContent = `Slide \${currentSlideIndex + 1} de \${lesson.slides.length}`;
+    document.getElementById('slide-title').textContent = slide.title;
+    document.getElementById('slide-subtitle').textContent = slide.subtitle;
+
+    const bulletsUl = document.getElementById('slide-bullets');
+    bulletsUl.innerHTML = slide.bullets.map(b => `<li>\${b}</li>`).join('');
+
+    document.getElementById('speaker-notes-text').textContent = slide.speakerNotes || 'Nenhuma nota adicional para este slide.';
+}
+
+function nextSlide() {
+    const lesson = allLessons[currentLessonIndex];
+    if (lesson && lesson.slides) {
+        currentSlideIndex = (currentSlideIndex + 1) % lesson.slides.length;
+        renderSlide();
+    }
+}
+
+function prevSlide() {
+    const lesson = allLessons[currentLessonIndex];
+    if (lesson && lesson.slides) {
+        currentSlideIndex = (currentSlideIndex - 1 + lesson.slides.length) % lesson.slides.length;
+        renderSlide();
+    }
 }
 
 function nextLesson() {
-    if (currentLessonIndex < lessons.length - 1) {
-        renderLesson(currentLessonIndex + 1);
+    if (currentLessonIndex < allLessons.length - 1) {
+        loadLesson(currentLessonIndex + 1);
+    } else {
+        alert('🎉 Parabéns! Você chegou ao final do curso Telecom Academy. Faça o download do seu livro oficial na aba de conclusão!');
     }
 }
 
 function prevLesson() {
     if (currentLessonIndex > 0) {
-        renderLesson(currentLessonIndex - 1);
+        loadLesson(currentLessonIndex - 1);
     }
 }
 
-function markCompleted() {
-    completedLessons.add(currentLessonIndex);
+function toggleLessonComplete() {
+    const lesson = allLessons[currentLessonIndex];
+    if (!lesson) return;
+
+    if (completedLessons.has(lesson.id)) {
+        completedLessons.delete(lesson.id);
+    } else {
+        completedLessons.add(lesson.id);
+    }
+
+    try {
+        localStorage.setItem('telecom_academy_completed', JSON.stringify([...completedLessons]));
+    } catch (e) {}
+
+    updateProgressBar();
     renderSidebar();
-    if (currentLessonIndex < lessons.length - 1) {
-        nextLesson();
+    updateCompleteButton();
+}
+
+function toggleLessonDone(lessonId) {
+    if (completedLessons.has(lessonId)) {
+        completedLessons.delete(lessonId);
+    } else {
+        completedLessons.add(lessonId);
+    }
+    try {
+        localStorage.setItem('telecom_academy_completed', JSON.stringify([...completedLessons]));
+    } catch (e) {}
+    updateProgressBar();
+    updateCompleteButton();
+}
+
+function updateCompleteButton() {
+    const lesson = allLessons[currentLessonIndex];
+    const btn = document.getElementById('btn-toggle-complete');
+    if (!btn || !lesson) return;
+
+    if (completedLessons.has(lesson.id)) {
+        btn.textContent = 'Aula Concluída ✓';
+        btn.style.background = '#059669';
+    } else {
+        btn.textContent = 'Marcar como Concluída ✓';
+        btn.style.background = '';
     }
 }
 
-function updateProgress() {
-    const total = lessons.length || 6;
-    const count = completedLessons.size;
-    const pct = Math.round((count / total) * 100);
-    document.getElementById('progress-text').innerText = `Progresso: ${count}/${total} Módulos (${pct}%)`;
-    document.getElementById('progress-fill').style.width = `${pct}%`;
+function updateProgressBar() {
+    const text = document.getElementById('progress-text');
+    const fill = document.getElementById('progress-fill');
+    if (!text || !fill) return;
+
+    const total = allLessons.length || 24;
+    const completed = completedLessons.size;
+    const pct = Math.round((completed / total) * 100);
+
+    text.textContent = `Progresso: \${completed}/\${total} Aulas (\${pct}%)`;
+    fill.style.width = `\${Math.max(5, pct)}%`;
 }
 
-function showView(viewName) {
-    document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.special-nav').forEach(n => n.classList.remove('active'));
+function switchMainTab(tabName) {
+    currentTab = tabName;
 
-    if (viewName === 'lesson') {
-        document.getElementById('view-lesson').classList.add('active');
-    } else if (viewName === 'microsip') {
-        document.getElementById('view-microsip').classList.add('active');
-    } else if (viewName === 'routing') {
-        document.getElementById('view-routing').classList.add('active');
-    } else if (viewName === 'hardware') {
-        document.getElementById('view-hardware').classList.add('active');
-    } else if (viewName === 'docker') {
-        document.getElementById('view-docker').classList.add('active');
-    }
-}
-
-async function simulateCall() {
-    const caller = document.getElementById('dial-caller').value;
-    const destination = document.getElementById('dial-dest').value;
-
-    const resp = await fetch('/api/simulate-route', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ caller, destination })
+    // Atualiza botões
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        if (btn.getAttribute('data-tab') === tabName) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
     });
-    const data = await resp.json();
 
-    const out = document.getElementById('route-output');
-    out.style.display = 'block';
-    out.innerHTML = `
-        <h4 style="color: #38bdf8; margin-bottom: 8px;">📡 Análise do Evento Yate (call.route)</h4>
-        <p><strong>Origem:</strong> <code>${data.caller}</code> ➡️ <strong>Destino Discado:</strong> <code>${data.destination}</code></p>
-        <p><strong>Tipo de Chamada Classificada:</strong> <span style="color: #34d399; font-weight: bold;">${data.callType}</span></p>
-        <p><strong>País / Cidade Identificados:</strong> ${data.matchedCountry} (${data.matchedCity})</p>
-        <p><strong>Tronco / Gateway SIP Selecionado:</strong> <code>${data.gateway}</code></p>
-        <p><strong>Protocolo & Latência Estimada:</strong> ${data.protocol} (~${data.latencyEstimatedMs} ms)</p>
-        <p style="margin-top: 10px; font-size: 0.85rem; color: #94a3b8;">
-            <em>O controlador Node.js respondeu ao motor Yate: <code>%%>message:ID:true::sip/sip:${data.cleanDest}@${data.gateway}:handled=true</code></em>
-        </p>
+    // Atualiza painéis
+    document.querySelectorAll('.tab-pane').forEach(pane => {
+        pane.classList.remove('active');
+    });
+
+    const targetPane = document.getElementById(`tab-\${tabName}`);
+    if (targetPane) {
+        targetPane.classList.add('active');
+    }
+}
+
+function switchDiagram(type) {
+    const img = document.getElementById('active-diagram-img');
+    const buttons = document.querySelectorAll('.diag-btn');
+    if (!img) return;
+
+    buttons.forEach(btn => btn.classList.remove('active'));
+
+    const map = {
+        'bancada': { file: 'img/diagrama-bancada-rf.svg', idx: 0 },
+        'brasil': { file: 'img/diagrama-brasil.svg', idx: 1 },
+        'eua': { file: 'img/diagrama-eua.svg', idx: 2 },
+        'portugal': { file: 'img/diagrama-portugal.svg', idx: 3 },
+        'global': { file: 'img/diagrama-global.svg', idx: 4 }
+    };
+
+    const target = map[type] || map['bancada'];
+    img.src = target.file;
+
+    if (buttons[target.idx]) {
+        buttons[target.idx].classList.add('active');
+    }
+}
+
+function filterLessons() {
+    const query = (document.getElementById('curriculum-search')?.value || '').toLowerCase().trim();
+    if (!query) {
+        document.querySelectorAll('.lesson-item').forEach(el => el.style.display = 'flex');
+        return;
+    }
+
+    allLessons.forEach(l => {
+        const item = document.getElementById(`lesson-item-\${l.id}`);
+        if (!item) return;
+
+        const match = l.title.toLowerCase().includes(query) ||
+                      l.tag.toLowerCase().includes(query) ||
+                      l.theoryText.toLowerCase().includes(query);
+
+        item.style.display = match ? 'flex' : 'none';
+    });
+}
+
+function initAudioEvents() {
+    const audio = document.getElementById('lesson-audio');
+    const timeDisplay = document.getElementById('audio-time');
+    const btn = document.getElementById('btn-audio-play');
+    if (!audio) return;
+
+    audio.addEventListener('timeupdate', () => {
+        const cur = formatTime(audio.currentTime);
+        const dur = formatTime(audio.duration || 840);
+        if (timeDisplay) timeDisplay.textContent = `\${cur} / \${dur}`;
+    });
+
+    audio.addEventListener('ended', () => {
+        if (btn) btn.textContent = '▶ Ouvir Novamente';
+    });
+}
+
+function toggleAudio() {
+    const audio = document.getElementById('lesson-audio');
+    const btn = document.getElementById('btn-audio-play');
+    if (!audio) return;
+
+    if (audio.paused) {
+        audio.play().then(() => {
+            if (btn) btn.textContent = '⏸ Pausar Áudio';
+        }).catch(e => {
+            console.log('Audio autoplay blocked or file unavailable:', e);
+            if (btn) btn.textContent = '⏸ Áudio em Execução';
+        });
+    } else {
+        audio.pause();
+        if (btn) btn.textContent = '▶ Continuar Áudio';
+    }
+}
+
+function formatTime(secs) {
+    if (isNaN(secs)) return '00:00';
+    const m = Math.floor(secs / 60).toString().padStart(2, '0');
+    const s = Math.floor(secs % 60).toString().padStart(2, '0');
+    return `\${m}:\${s}`;
+}
+
+// Simulador de Roteamento SIP / E.164
+function simulateCall() {
+    const caller = document.getElementById('sim-caller').value;
+    const called = document.getElementById('sim-called').value;
+    const resBox = document.getElementById('sim-result-box');
+    if (!resBox) return;
+
+    let rota = '';
+    let tipo = '';
+    let codec = 'G.711u / Opus HD';
+    let sbc = 'Yate SBC Matriz SP (10.11.0.1)';
+    let latencia = '~1 ms (Rede Local)';
+    let economia = '100% (Sem tarifação PSTN)';
+
+    if (called === '8001') {
+        tipo = '⚡ Teste de Eco Acústico de Precisão';
+        rota = 'Asterisk PBX Local -> Echo() Application (Porta 5060)';
+        latencia = '< 0.5 ms';
+    } else if (called === '8000') {
+        tipo = '👥 Sala de Conferência Internacional';
+        rota = 'Asterisk PBX Local -> ConfBridge() Global Room #1';
+        latencia = '< 1.0 ms';
+    } else if (called.startsWith('11')) {
+        tipo = '🇧🇷 Chamada Local São Paulo (DDD 11)';
+        rota = 'Yate SP -> Asterisk Matriz (10.11.0.10) -> Ramal ' + called;
+    } else if (called.startsWith('21') && !called.startsWith('2121')) {
+        tipo = '🇧🇷 Chamada Interurbana Brasil (SP ↔ RJ)';
+        rota = 'Yate SP (10.11.0.1) -> Túnel SIP LCR -> Yate RJ (10.21.0.1) -> Ramal ' + called;
+        latencia = '~8 ms';
+        economia = '100% (Sem cobrança de degrau tarifário DDI/DDD)';
+    } else if (called.startsWith('305')) {
+        tipo = '🇺🇸 Chamada DDI Estados Unidos (Miami FL)';
+        rota = 'Yate SP -> Cabo Submarino Latam -> Yate Miami (10.30.5.1) -> Ramal 3051';
+        codec = 'G.711u (PCMU NANP)';
+        latencia = '~110 ms';
+        economia = '75% (Breakout Local PSTN Miami)';
+    } else if (called.startsWith('2121')) {
+        tipo = '🇺🇸 Chamada DDI Estados Unidos (Nova York NY)';
+        rota = 'Yate SP -> Túnel TLS/SRTP -> Yate New York (10.21.2.1) -> Ramal 2121';
+        codec = 'G.711u (PCMU NANP)';
+        latencia = '~125 ms';
+        economia = '75% (Breakout Local Wall St)';
+    } else if (called.startsWith('3511')) {
+        tipo = '🇵🇹 Chamada DDI Portugal (Lisboa Sede Europa)';
+        rota = 'Yate SP -> Cabo EllaLink -> Yate Lisboa (10.35.1.1) -> Ramal 3511';
+        codec = 'Transcodificação C++: G.711u (SP) ↔ G.711a (PCMA Lisboa)';
+        latencia = '~85 ms';
+        economia = '80% (Breakout Local ANACOM Europa)';
+    } else if (called.startsWith('3512')) {
+        tipo = '🇵🇹 Chamada DDI Portugal (Porto Polo Norte)';
+        rota = 'Yate SP -> Cabo EllaLink -> Yate Porto (10.35.2.1) -> Ramal 3512';
+        codec = 'Transcodificação C++: G.711u (SP) ↔ G.711a (PCMA Porto)';
+        latencia = '~88 ms';
+        economia = '80% (Breakout Local Norte PT)';
+    }
+
+    resBox.style.display = 'block';
+    resBox.innerHTML = `
+        <div class="result-badge">\${tipo}</div>
+        <div class="call-metrics-grid">
+            <div class="metric-item">
+                <span class="m-label">Origem:</span>
+                <span class="m-val">\${caller}</span>
+            </div>
+            <div class="metric-item">
+                <span class="m-label">Destino:</span>
+                <span class="m-val">\${called}</span>
+            </div>
+            <div class="metric-item">
+                <span class="m-label">Latência Estimada:</span>
+                <span class="m-val highlight">\${latencia}</span>
+            </div>
+            <div class="metric-item">
+                <span class="m-label">Economia Gerada:</span>
+                <span class="m-val green">\${economia}</span>
+            </div>
+        </div>
+        <div class="route-path-box">
+            <strong>Caminho de Sinalização (Hop-by-Hop LCR):</strong>
+            <p><code>\${rota}</code></p>
+            <p><strong>Codec & Mídia:</strong> <code>\${codec}</code></p>
+        </div>
     `;
 }
-
-let isAudioPlaying = false;
-let audioTimer = null;
-let currentSeconds = 0;
-
-function toggleAudioMock(btn) {
-    const timeLabel = document.getElementById('audio-time');
-    const bars = document.querySelectorAll('.wave-bar');
-
-    if (!isAudioPlaying) {
-        isAudioPlaying = true;
-        btn.innerText = '⏸';
-        btn.style.background = '#10b981';
-        audioTimer = setInterval(() => {
-            currentSeconds++;
-            let mins = Math.floor(currentSeconds / 60).toString().padStart(2, '0');
-            let secs = (currentSeconds % 60).toString().padStart(2, '0');
-            timeLabel.innerText = `${mins}:${secs} / 08:35`;
-
-            // Animação das barrinhas
-            bars.forEach(b => {
-                let randomH = Math.floor(Math.random() * 80) + 20;
-                b.style.height = `${randomH}%`;
-                b.classList.toggle('active', Math.random() > 0.4);
-            });
-        }, 1000);
-    } else {
-        isAudioPlaying = false;
-        btn.innerText = '▶';
-        btn.style.background = '#3b82f6';
-        clearInterval(audioTimer);
-    }
-}
-
-// Inicializa ao carregar
-window.addEventListener('DOMContentLoaded', () => {
-    loadLessons();
-});

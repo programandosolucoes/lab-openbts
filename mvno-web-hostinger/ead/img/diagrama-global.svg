@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 680" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgWorld" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a101d"/>
+      <stop offset="100%" stop-color="#04070d"/>
+    </linearGradient>
+    <radialGradient id="meshGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#1e293b" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#0f172a" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1100" height="680" rx="12" fill="url(#bgWorld)" stroke="#1e293b" stroke-width="2"/>
+  <circle cx="550" cy="340" r="300" fill="url(#meshGrad)"/>
+
+  <!-- Título Geral -->
+  <g transform="translate(50, 45)">
+    <text x="0" y="0" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="22" font-weight="700">ARQUITETURA GLOBAL MULTI-PAÍS: BRASIL ↔ EUA ↔ PORTUGAL</text>
+    <text x="0" y="26" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="14">Roteamento de Menor Custo (LCR) • Sinalização SIP/TLS • Mídia RTP Cifrada (SRTP) • 6 POPs Urbanos Interconectados</text>
+  </g>
+
+  <!-- NÓ 1: BRASIL (São Paulo + Rio de Janeiro) -->
+  <g transform="translate(100, 320)">
+    <rect width="280" height="260" rx="12" fill="#0f1f38" stroke="#3b82f6" stroke-width="2"/>
+    <rect width="280" height="38" rx="12" fill="#1d4ed8"/>
+    <text x="15" y="24" fill="#ffffff" font-family="'JetBrains Mono', monospace" font-size="13" font-weight="700">🇧🇷 BRASIL (+55)</text>
+
+    <!-- SP -->
+    <rect x="15" y="50" width="250" height="85" rx="6" fill="#1e293b" stroke="#60a5fa"/>
+    <text x="25" y="70" fill="#60a5fa" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700">POP SÃO PAULO (DDD 11)</text>
+    <text x="25" y="90" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10">Yate SBC SP • Asterisk PABX</text>
+    <text x="25" y="108" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="10">Ramal 1101 (MicroSIP) • 1102 (5G)</text>
+    <text x="25" y="125" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="9">IP: 10.11.0.1 (Matriz Geral)</text>
+
+    <!-- RJ -->
+    <rect x="15" y="145" width="250" height="85" rx="6" fill="#1e293b" stroke="#34d399"/>
+    <text x="25" y="165" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700">POP RIO DE JANEIRO (DDD 21)</text>
+    <text x="25" y="185" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10">Yate Router RJ • UERANSIM 5G</text>
+    <text x="25" y="203" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="10">Ramal 2101 (MicroSIP) • 2102 (5G)</text>
+    <text x="25" y="220" fill="#10b981" font-family="'JetBrains Mono', monospace" font-size="9">IP: 10.21.0.1 (Filial Eng)</text>
+  </g>
+
+  <!-- NÓ 2: ESTADOS UNIDOS (Miami + Nova York) -->
+  <g transform="translate(410, 110)">
+    <rect width="280" height="260" rx="12" fill="#1f1438" stroke="#a855f7" stroke-width="2"/>
+    <rect width="280" height="38" rx="12" fill="#7e22ce"/>
+    <text x="15" y="24" fill="#ffffff" font-family="'JetBrains Mono', monospace" font-size="13" font-weight="700">🇺🇸 ESTADOS UNIDOS (+1)</text>
+
+    <!-- Miami -->
+    <rect x="15" y="50" width="250" height="85" rx="6" fill="#1e293b" stroke="#c084fc"/>
+    <text x="25" y="70" fill="#c084fc" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700">POP MIAMI (NPA 305)</text>
+    <text x="25" y="90" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10">Yate Core Miami • G.711u Codec</text>
+    <text x="25" y="108" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="10">Ramal 3051 (MicroSIP)</text>
+    <text x="25" y="125" fill="#e879f9" font-family="'JetBrains Mono', monospace" font-size="9">IP: 10.30.5.1 (Hub Américas)</text>
+
+    <!-- NY -->
+    <rect x="15" y="145" width="250" height="85" rx="6" fill="#1e293b" stroke="#818cf8"/>
+    <text x="25" y="165" fill="#818cf8" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700">POP NOVA YORK (NPA 212)</text>
+    <text x="25" y="185" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10">Asterisk PABX • Conferência 8000</text>
+    <text x="25" y="203" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="10">Ramal 2121 (MicroSIP)</text>
+    <text x="25" y="220" fill="#a5b4fc" font-family="'JetBrains Mono', monospace" font-size="9">IP: 10.21.2.1 (Wall St)</text>
+  </g>
+
+  <!-- NÓ 3: PORTUGAL (Lisboa + Porto) -->
+  <g transform="translate(720, 320)">
+    <rect width="280" height="260" rx="12" fill="#281414" stroke="#ef4444" stroke-width="2"/>
+    <rect width="280" height="38" rx="12" fill="#b91c1c"/>
+    <text x="15" y="24" fill="#ffffff" font-family="'JetBrains Mono', monospace" font-size="13" font-weight="700">🇵🇹 PORTUGAL (+351)</text>
+
+    <!-- Lisboa -->
+    <rect x="15" y="50" width="250" height="85" rx="6" fill="#1e293b" stroke="#f87171"/>
+    <text x="25" y="70" fill="#f87171" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700">POP LISBOA (+351 21)</text>
+    <text x="25" y="90" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10">Yate Core Lisboa • G.711a (PCMA)</text>
+    <text x="25" y="108" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="10">Ramal 3511 (MicroSIP)</text>
+    <text x="25" y="125" fill="#fca5a5" font-family="'JetBrains Mono', monospace" font-size="9">IP: 10.35.1.1 (Sede Europa)</text>
+
+    <!-- Porto -->
+    <rect x="15" y="145" width="250" height="85" rx="6" fill="#1e293b" stroke="#34d399"/>
+    <text x="25" y="165" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700">POP PORTO (+351 22)</text>
+    <text x="25" y="185" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10">Asterisk PABX • Filas de Suporte</text>
+    <text x="25" y="203" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="10">Ramal 3512 (MicroSIP)</text>
+    <text x="25" y="220" fill="#6ee7b7" font-family="'JetBrains Mono', monospace" font-size="9">IP: 10.35.2.1 (Polo Norte)</text>
+  </g>
+
+  <!-- LINHAS DO TRIÂNGULO TRANSATLÂNTICO -->
+  <!-- 1. Brasil ↔ EUA -->
+  <path d="M 270 320 Q 360 210 410 200" fill="none" stroke="#38bdf8" stroke-width="3" stroke-dasharray="6,4"/>
+  <rect x="260" y="220" width="130" height="32" rx="6" fill="#0f172a" stroke="#38bdf8"/>
+  <text x="270" y="236" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="700">TÚNEL BR ↔ EUA</text>
+  <text x="270" y="248" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="8">Latência: ~110 ms</text>
+
+  <!-- 2. EUA ↔ Portugal -->
+  <path d="M 690 200 Q 740 210 830 320" fill="none" stroke="#c084fc" stroke-width="3" stroke-dasharray="6,4"/>
+  <rect x="710" y="220" width="130" height="32" rx="6" fill="#0f172a" stroke="#c084fc"/>
+  <text x="720" y="236" fill="#c084fc" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="700">TÚNEL EUA ↔ PT</text>
+  <text x="720" y="248" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="8">Latência: ~75 ms</text>
+
+  <!-- 3. Brasil ↔ Portugal -->
+  <path d="M 380 480 Q 550 540 720 480" fill="none" stroke="#f59e0b" stroke-width="3" stroke-dasharray="6,4"/>
+  <rect x="485" y="525" width="130" height="32" rx="6" fill="#0f172a" stroke="#f59e0b"/>
+  <text x="495" y="541" fill="#f59e0b" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="700">TÚNEL BR ↔ PT</text>
+  <text x="495" y="553" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="8">Cabo EllaLink: ~85 ms</text>
+
+  <!-- Centro: Matriz LCR -->
+  <g transform="translate(450, 310)">
+    <circle cx="100" cy="80" r="65" fill="#0f172a" stroke="#f59e0b" stroke-width="2"/>
+    <text x="65" y="72" fill="#fbbf24" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="700">MATRIZ LCR</text>
+    <text x="60" y="88" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="9">Custo Zero (IP)</text>
+    <text x="50" y="102" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="8">Breakout Local PSTN</text>
+  </g>
+
+  <!-- Rodapé -->
+  <g transform="translate(50, 640)">
+    <text x="0" y="0" fill="#64748b" font-family="'Inter', sans-serif" font-size="11">Roteamento Transatlântico com Transcodificação Automática em C++ (Yate) e Troncos PJSIP Cifrados com Chaves Temporárias SRTP</text>
+  </g>
+</svg>

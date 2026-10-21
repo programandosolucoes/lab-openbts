@@ -1,0 +1,197 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 680" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#090d16"/>
+    </linearGradient>
+    <linearGradient id="sdrGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="attenGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#b45309"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+    <linearGradient id="virtGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#064e3b"/>
+      <stop offset="100%" stop-color="#022c22"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <rect width="1100" height="680" rx="12" fill="url(#bgGrad)" stroke="#1e293b" stroke-width="2"/>
+
+  <!-- Título do Diagrama -->
+  <g transform="translate(40, 35)">
+    <text x="0" y="0" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="20" font-weight="700">DESENHO A: BANCADA DE RF CABEADA CONFINADA (60 dB) vs. DRIVER VIRTUAL</text>
+    <text x="0" y="24" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="13">Conformidade estrita com o Art. 183 da Lei 9.472/1997 (LGT) e Resolução Anatel nº 777/2025 • Tolerância Zero a Vazamento Eletromagnético</text>
+  </g>
+
+  <!-- SEÇÃO 1: BANCADA FÍSICA CABEADA CONFINADA (60 dB) -->
+  <rect x="40" y="80" width="1020" height="290" rx="10" fill="#131d31" stroke="#334155" stroke-dasharray="6,4" stroke-width="1.5"/>
+  <rect x="55" y="68" width="360" height="24" rx="4" fill="#0284c7"/>
+  <text x="65" y="84" fill="#ffffff" font-family="'Inter', sans-serif" font-size="12" font-weight="700">CENÁRIO 1: BANCADA FÍSICA COM SDR (SEM ANTENAS)</text>
+
+  <!-- 1. Computador Host Docker -->
+  <g transform="translate(60, 110)">
+    <rect width="170" height="230" rx="8" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
+    <rect width="170" height="35" rx="8" fill="#0f172a"/>
+    <text x="15" y="22" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="13" font-weight="700">HOST LINUX / DOCKER</text>
+    <text x="15" y="58" fill="#e2e8f0" font-family="'Inter', sans-serif" font-size="11" font-weight="600">Pilha Open Source:</text>
+    <text x="15" y="80" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="11">• Open5GS 5G/4G Core</text>
+    <text x="15" y="100" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="11">• Yate Core + BTS</text>
+    <text x="15" y="120" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="11">• Asterisk PJSIP</text>
+    <text x="15" y="140" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="11">• Node.js Controller</text>
+    <text x="15" y="160" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="11">• MongoDB Subscriber DB</text>
+    <rect x="15" y="185" width="140" height="26" rx="4" fill="#0284c7" fill-opacity="0.2" stroke="#0284c7"/>
+    <text x="25" y="202" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="10">UHD / SoapySDR Libs</text>
+  </g>
+
+  <!-- Cabo USB 3.0 -->
+  <path d="M 230 220 L 290 220" stroke="#38bdf8" stroke-width="3" stroke-linecap="round"/>
+  <text x="238" y="210" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="10">USB 3.0</text>
+
+  <!-- 2. Hardware SDR -->
+  <g transform="translate(290, 110)">
+    <rect width="160" height="230" rx="8" fill="url(#sdrGrad)" stroke="#64748b" stroke-width="1.5"/>
+    <rect width="160" height="35" rx="8" fill="#0f172a"/>
+    <text x="15" y="22" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="700">SDR BARE-METAL</text>
+    <text x="15" y="60" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="11">Hardware Suportado:</text>
+    <text x="15" y="80" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="11">• USRP B210 / B200</text>
+    <text x="15" y="100" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="11">• Nuand BladeRF x40</text>
+    <text x="15" y="120" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="11">• LimeSDR USB</text>
+    <circle cx="130" cy="170" r="12" fill="#b45309" stroke="#f59e0b" stroke-width="2"/>
+    <text x="15" y="174" fill="#f59e0b" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700">Porta TX (SMA):</text>
+    <text x="15" y="200" fill="#ef4444" font-family="'JetBrains Mono', monospace" font-size="10">0 dBm (1 mW máx)</text>
+    <text x="15" y="218" fill="#ef4444" font-family="'Inter', sans-serif" font-size="10" font-weight="700">PROIBIDO ANTENA</text>
+  </g>
+
+  <!-- Cabo Coaxial SMA RG-316 -->
+  <path d="M 450 170 L 490 170" stroke="#f59e0b" stroke-width="4" stroke-linecap="round"/>
+  <text x="452" y="160" fill="#f59e0b" font-family="'JetBrains Mono', monospace" font-size="9">RG-316</text>
+
+  <!-- 3. Primeiro Atenuador Coaxial (30 dB Fixo) -->
+  <g transform="translate(490, 130)">
+    <rect width="110" height="80" rx="6" fill="url(#attenGrad)" stroke="#d97706" stroke-width="2"/>
+    <text x="15" y="25" fill="#ffffff" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700">ATENUADOR 1</text>
+    <text x="20" y="45" fill="#ffffff" font-family="'JetBrains Mono', monospace" font-size="16" font-weight="800">-30 dB</text>
+    <text x="15" y="65" fill="#fef3c7" font-family="'Inter', sans-serif" font-size="9">50Ω • 2W • DC-6GHz</text>
+  </g>
+
+  <!-- Cabo Conexão Intermediária -->
+  <path d="M 600 170 L 630 170" stroke="#f59e0b" stroke-width="4" stroke-linecap="round"/>
+
+  <!-- 4. Segundo Atenuador Coaxial (30 dB Passo/Step) -->
+  <g transform="translate(630, 130)">
+    <rect width="110" height="80" rx="6" fill="url(#attenGrad)" stroke="#d97706" stroke-width="2"/>
+    <text x="15" y="25" fill="#ffffff" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700">ATENUADOR 2</text>
+    <text x="20" y="45" fill="#ffffff" font-family="'JetBrains Mono', monospace" font-size="16" font-weight="800">-30 dB</text>
+    <text x="15" y="65" fill="#fef3c7" font-family="'Inter', sans-serif" font-size="9">Variável / Step 50Ω</text>
+  </g>
+
+  <!-- Total 60 dB Badge -->
+  <g transform="translate(530, 225)">
+    <rect width="180" height="30" rx="6" fill="#78350f" stroke="#f59e0b" stroke-width="1"/>
+    <text x="12" y="20" fill="#fef3c7" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700">ATENUAÇÃO TOTAL: -60 dB</text>
+  </g>
+
+  <!-- Cabo até Acoplador -->
+  <path d="M 740 170 L 770 170" stroke="#f59e0b" stroke-width="4" stroke-linecap="round"/>
+
+  <!-- 5. Acoplador Direcional / Monitor de RF -->
+  <g transform="translate(770, 130)">
+    <rect width="100" height="80" rx="6" fill="#334155" stroke="#94a3b8" stroke-width="1.5"/>
+    <text x="12" y="25" fill="#f8fafc" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700">ACOPLADOR</text>
+    <text x="12" y="45" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="13">-20 dB Tap</text>
+    <text x="12" y="65" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="9">Porta de Monitor</text>
+  </g>
+
+  <!-- Tap para Analisador de Espectro -->
+  <path d="M 820 210 L 820 260" stroke="#94a3b8" stroke-width="2" stroke-dasharray="3,3"/>
+  <rect x="760" y="260" width="120" height="40" rx="4" fill="#0f172a" stroke="#64748b"/>
+  <text x="770" y="278" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="9">ANALISADOR ESPECTRO</text>
+  <text x="770" y="292" fill="#10b981" font-family="'JetBrains Mono', monospace" font-size="8">Potência: -60 dBm (nW)</text>
+
+  <!-- Cabo até Dispositivo Alvo / Caixa Blindada -->
+  <path d="M 870 170 L 910 170" stroke="#f59e0b" stroke-width="4" stroke-linecap="round"/>
+
+  <!-- 6. Dispositivo Alvo / Dongle em Caixa de Faraday -->
+  <g transform="translate(910, 110)">
+    <rect width="130" height="230" rx="8" fill="#1e293b" stroke="#10b981" stroke-width="2"/>
+    <rect width="130" height="35" rx="8" fill="#064e3b"/>
+    <text x="10" y="22" fill="#a7f3d0" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700">DISPOSITIVO TESTE</text>
+    <text x="12" y="60" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="10">Entrada Confinada:</text>
+    <text x="12" y="80" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10">• Modem 4G/5G USB</text>
+    <text x="12" y="100" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10">• Smartphone com</text>
+    <text x="18" y="115" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10">conector SMA direto</text>
+    <text x="12" y="140" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10">• SIM Card de Teste</text>
+    <text x="18" y="155" fill="#94a3b8" font-family="'JetBrains Mono', monospace" font-size="9">IMSI: 001010000000001</text>
+    <rect x="12" y="180" width="106" height="30" rx="4" fill="#064e3b" stroke="#10b981"/>
+    <text x="18" y="198" fill="#34d399" font-family="'Inter', sans-serif" font-size="9" font-weight="700">CAIXA FARADAY</text>
+  </g>
+
+  <!-- SEÇÃO 2: CENÁRIO TOTALMENTE VIRTUALIZADO (ZERO HARDWARE RF) -->
+  <rect x="40" y="390" width="1020" height="260" rx="10" fill="#0d241d" stroke="#059669" stroke-dasharray="6,4" stroke-width="1.5"/>
+  <rect x="55" y="378" width="460" height="24" rx="4" fill="#059669"/>
+  <text x="65" y="394" fill="#ffffff" font-family="'Inter', sans-serif" font-size="12" font-weight="700">CENÁRIO 2: DRIVERS VIRTUAIS & EMULAÇÃO DE REDE (SEM GASTO COM HARDWARE)</text>
+
+  <!-- Módulo 1: YateBTS dummyradio -->
+  <g transform="translate(60, 420)">
+    <rect width="220" height="210" rx="8" fill="#064e3b" stroke="#10b981" stroke-width="1.5"/>
+    <rect width="220" height="32" rx="8" fill="#022c22"/>
+    <text x="15" y="21" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700">1. YateBTS dummyradio.yate</text>
+    <text x="15" y="55" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="11">Transceptor Virtual em Software:</text>
+    <text x="15" y="75" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="10">• Simula canais lógicos GSM</text>
+    <text x="15" y="92" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="10">• Rajadas e frames TDMA na CPU</text>
+    <text x="15" y="110" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="10">• Zero emissão eletromagnética</text>
+    <rect x="15" y="140" width="190" height="50" rx="4" fill="#022c22" stroke="#059669"/>
+    <text x="22" y="158" fill="#a7f3d0" font-family="'JetBrains Mono', monospace" font-size="9">config/ysipchan.conf</text>
+    <text x="22" y="176" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="9">radio=dummyradio.yate</text>
+  </g>
+
+  <!-- Módulo 2: OpenBTS Transceiver UDP -->
+  <g transform="translate(310, 420)">
+    <rect width="220" height="210" rx="8" fill="#064e3b" stroke="#10b981" stroke-width="1.5"/>
+    <rect width="220" height="32" rx="8" fill="#022c22"/>
+    <text x="15" y="21" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700">2. Transceptor UDP (5700)</text>
+    <text x="15" y="55" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="11">Desacoplamento em Rede IP:</text>
+    <text x="15" y="75" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="10">• MBTS comunica-se via UDP</text>
+    <text x="15" y="92" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="10">• Porta 5700 (Controle) / 5701 (I/Q)</text>
+    <text x="15" y="110" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="10">• Injeção de quadros por socket</text>
+    <rect x="15" y="140" width="190" height="50" rx="4" fill="#022c22" stroke="#059669"/>
+    <text x="22" y="158" fill="#a7f3d0" font-family="'JetBrains Mono', monospace" font-size="9">transceiver 5700 127.0.0.1</text>
+    <text x="22" y="176" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="9">clock=5702 / data=5701</text>
+  </g>
+
+  <!-- Módulo 3: srsRAN com ZeroMQ (ZMQ) -->
+  <g transform="translate(560, 420)">
+    <rect width="230" height="210" rx="8" fill="#064e3b" stroke="#10b981" stroke-width="1.5"/>
+    <rect width="230" height="32" rx="8" fill="#022c22"/>
+    <text x="15" y="21" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700">3. srsRAN ZeroMQ (ZMQ I/Q)</text>
+    <text x="15" y="55" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="11">Camada Física por Barramento:</text>
+    <text x="15" y="75" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="10">• Amostras I/Q sobre TCP/IPC</text>
+    <text x="15" y="92" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="10">• Conecta eNodeB e srsUE na RAM</text>
+    <text x="15" y="110" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="10">• Simula canal RF com ruído/AWGN</text>
+    <rect x="15" y="140" width="200" height="50" rx="4" fill="#022c22" stroke="#059669"/>
+    <text x="22" y="158" fill="#a7f3d0" font-family="'JetBrains Mono', monospace" font-size="9">device_name = zmq</text>
+    <text x="22" y="176" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="9">device_args = tx_port=tcp://...</text>
+  </g>
+
+  <!-- Módulo 4: UERANSIM 5G Core SCTP -->
+  <g transform="translate(820, 420)">
+    <rect width="220" height="210" rx="8" fill="#064e3b" stroke="#10b981" stroke-width="1.5"/>
+    <rect width="220" height="32" rx="8" fill="#022c22"/>
+    <text x="15" y="21" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700">4. UERANSIM (SCTP 38412)</text>
+    <text x="15" y="55" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="11">Rádio & UE 5G SA Completo:</text>
+    <text x="15" y="75" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="10">• Conecta direto no AMF Open5GS</text>
+    <text x="15" y="92" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="10">• NGAP sobre SCTP na porta 38412</text>
+    <text x="15" y="110" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="10">• Cria interface tun real uesimtun0</text>
+    <rect x="15" y="140" width="190" height="50" rx="4" fill="#022c22" stroke="#059669"/>
+    <text x="22" y="158" fill="#a7f3d0" font-family="'JetBrains Mono', monospace" font-size="9">nr-gnb -c gnb.yaml</text>
+    <text x="22" y="176" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="9">nr-ue -c ue.yaml (tun0)</text>
+  </g>
+
+</svg>
