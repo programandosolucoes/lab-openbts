@@ -426,8 +426,7 @@ function initAudioEvents() {
     });
 
     audio.addEventListener('error', function(e) {
-        console.error('Audio playback error:', e);
-        if (btn) btn.textContent = '▶ Erro ao carregar';
+        if (btn) btn.textContent = '🎙️ Áudio em Processamento';
     });
 }
 
