@@ -407,122 +407,63 @@ function filterLessons() {
 }
 
 // -------------------------------------------------------------
-// MOTOR DE ÁUDIO INTEGRADO (Web Speech API + Áudio Studio)
+// REPRODUTOR DE ÁUDIO OFICIAL (NotebookLM Studio Podcast M4A)
 // -------------------------------------------------------------
 function initAudioEvents() {
     const audio = document.getElementById('lesson-audio');
-    if (audio) {
-        audio.addEventListener('ended', function() {
-            stopAudioPlayback();
-        });
-    }
+    const timeDisplay = document.getElementById('audio-time');
+    const btn = document.getElementById('btn-audio-play');
+    if (!audio) return;
+
+    audio.addEventListener('timeupdate', function() {
+        const cur = formatTime(audio.currentTime);
+        const dur = formatTime(audio.duration || 840);
+        if (timeDisplay) timeDisplay.textContent = cur + ' / ' + dur;
+    });
+
+    audio.addEventListener('ended', function() {
+        stopAudioPlayback();
+    });
+
+    audio.addEventListener('error', function(e) {
+        console.error('Audio playback error:', e);
+        if (btn) btn.textContent = '▶ Erro ao carregar';
+    });
 }
 
 function toggleAudio() {
-    if (isPlayingAudio) {
-        stopAudioPlayback();
-    } else {
+    const audio = document.getElementById('lesson-audio');
+    if (!audio) return;
+
+    if (audio.paused) {
         startAudioPlayback();
+    } else {
+        stopAudioPlayback();
     }
 }
 
 function startAudioPlayback() {
+    const audio = document.getElementById('lesson-audio');
     const btn = document.getElementById('btn-audio-play');
-    isPlayingAudio = true;
-    if (btn) btn.textContent = '⏸ Pausar Áudio';
+    if (!audio) return;
 
-    // Dispara a narração da aula / slide atual
-    speakCurrentSlide();
-
-    // Inicia contador de tempo
-    if (audioTimer) clearInterval(audioTimer);
-    audioTimer = setInterval(function() {
-        audioSecondsElapsed++;
-        updateAudioTimeDisplay();
-    }, 1000);
+    audio.play().then(function() {
+        isPlayingAudio = true;
+        if (btn) btn.textContent = '⏸ Pausar Áudio';
+    }).catch(function(e) {
+        console.error('Falha na reprodução de áudio:', e);
+        if (btn) btn.textContent = '▶ Tentar Novamente';
+    });
 }
 
 function stopAudioPlayback() {
+    const audio = document.getElementById('lesson-audio');
     const btn = document.getElementById('btn-audio-play');
+    if (!audio) return;
+
+    audio.pause();
     isPlayingAudio = false;
     if (btn) btn.textContent = '▶ Ouvir Aula';
-
-    if (window.speechSynthesis) {
-        window.speechSynthesis.cancel();
-    }
-
-    const audio = document.getElementById('lesson-audio');
-    if (audio && !audio.paused) {
-        audio.pause();
-    }
-
-    if (audioTimer) {
-        clearInterval(audioTimer);
-        audioTimer = null;
-    }
-}
-
-function speakCurrentSlide() {
-    if (!('speechSynthesis' in window)) {
-        // Fallback para arquivo de áudio HTML5 nativo
-        const audio = document.getElementById('lesson-audio');
-        if (audio) {
-            audio.play().catch(function(e) {
-                console.log('Audio fallback error:', e);
-            });
-        }
-        return;
-    }
-
-    window.speechSynthesis.cancel();
-
-    const lesson = allLessons[currentLessonIndex];
-    if (!lesson) return;
-
-    let textToSpeak = '';
-    if (lesson.slides && lesson.slides[currentSlideIndex]) {
-        const s = lesson.slides[currentSlideIndex];
-        textToSpeak = 'Aula: ' + lesson.title + '. ' +
-                      'Slide ' + (currentSlideIndex + 1) + ': ' + s.title + '. ' +
-                      s.subtitle + '. ' +
-                      'Pontos principais: ' + s.bullets.join('. ') + '. ' +
-                      'Notas técnicas do instrutor: ' + s.speakerNotes;
-    } else {
-        textToSpeak = 'Aula: ' + lesson.title + '. ' + (lesson.tag || '');
-    }
-
-    const utterance = new SpeechSynthesisUtterance(textToSpeak);
-    utterance.lang = 'pt-BR';
-    utterance.rate = 1.05;
-    utterance.pitch = 1.0;
-
-    // Seleciona voz em português se disponível
-    const voices = window.speechSynthesis.getVoices();
-    const ptVoice = voices.find(function(v) { return v.lang.includes('pt') || v.lang.includes('BR'); });
-    if (ptVoice) {
-        utterance.voice = ptVoice;
-    }
-
-    utterance.onend = function() {
-        // Se houver próximo slide, pode avançar automaticamente
-        const btn = document.getElementById('btn-audio-play');
-        if (currentSlideIndex < (lesson.slides.length - 1)) {
-            nextSlide();
-        } else {
-            stopAudioPlayback();
-        }
-    };
-
-    utterance.onerror = function(err) {
-        console.log('Speech synthesis error, fallback to audio element:', err);
-        const audio = document.getElementById('lesson-audio');
-        if (audio) {
-            audio.play().catch(function() {});
-        }
-    };
-
-    currentUtterance = utterance;
-    window.speechSynthesis.speak(utterance);
 }
 
 function updateAudioTimeDisplay() {
