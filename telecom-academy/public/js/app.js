@@ -137,6 +137,16 @@ PING 8.8.8.8 (8.8.8.8) from 10.45.0.2 uesimtun0: 56(84) bytes of data.
                     Enquanto a operadora fornece o sinal de rádio e os chips, você entrega para as empresas clientes o <strong>PABX na nuvem integrado ao chip móvel</strong> (desenvolvido no Yate + Node.js), unificando ramais do escritório e celulares corporativos na mesma plataforma!
                 </li>
             </ul>
+
+            <div class="alert-box success" style="margin-top: 28px;">
+                <div class="alert-title">📖 Baixe o Livro Completo da Formação em Formato EPUB</div>
+                <p>O livro <strong>"Engenharia de Telecomunicações e MVNO Convergente"</strong> de autoria de <strong>Carlos Lopes</strong> está disponível para leitura em qualquer dispositivo (e-reader, smartphone, tablet ou PC).</p>
+                <div style="margin-top: 14px;">
+                    <a href="/downloads/Engenharia_Telecom_MVNO_Convergente_Carlos_Lopes.epub" class="btn btn-accent" download>
+                        📥 Baixar Livro Oficial (.EPUB)
+                    </a>
+                </div>
+            </div>
         `
     }
 ];
@@ -177,10 +187,40 @@ function renderLesson(index) {
     const l = lessons[index];
     const detail = lessonDetails[index] || { content: '<p>Conteúdo em atualização.</p>' };
 
+    const slidesHtml = `
+        <div class="notebooklm-card">
+            <div class="notebooklm-header">
+                <span class="notebooklm-badge">🎙️ NotebookLM Deep Dive • Resumo em Áudio</span>
+                <span style="font-size: 0.8rem; color: #94a3b8;">Episódio de Análise Técnica</span>
+            </div>
+            <p style="font-size: 0.92rem; color: #e2e8f0; margin-bottom: 8px;">
+                Ouça o debate executivo sobre os pontos críticos do <strong>${l.title.split(':')[0]}</strong>, destacando as implicações na prática de operadora.
+            </p>
+            <div class="audio-player-mock">
+                <button class="btn-play-pause" onclick="toggleAudioMock(this)">▶</button>
+                <div class="audio-waveform" id="waveform">
+                    <span class="wave-bar active" style="height: 40%;"></span>
+                    <span class="wave-bar active" style="height: 70%;"></span>
+                    <span class="wave-bar active" style="height: 100%;"></span>
+                    <span class="wave-bar active" style="height: 50%;"></span>
+                    <span class="wave-bar active" style="height: 85%;"></span>
+                    <span class="wave-bar" style="height: 35%;"></span>
+                    <span class="wave-bar" style="height: 60%;"></span>
+                    <span class="wave-bar" style="height: 90%;"></span>
+                    <span class="wave-bar" style="height: 45%;"></span>
+                    <span class="wave-bar" style="height: 75%;"></span>
+                    <span class="wave-bar" style="height: 30%;"></span>
+                    <span class="wave-bar" style="height: 65%;"></span>
+                </div>
+                <span id="audio-time" style="font-family: monospace; font-size: 0.82rem; color: #94a3b8;">00:00 / 08:35</span>
+            </div>
+        </div>
+    `;
+
     document.getElementById('lesson-title').innerText = l.title;
     document.getElementById('lesson-category').innerText = l.category;
     document.getElementById('lesson-duration').innerText = `⏱️ ${l.duration}`;
-    document.getElementById('lesson-body').innerHTML = detail.content;
+    document.getElementById('lesson-body').innerHTML = slidesHtml + detail.content;
 
     document.getElementById('btn-prev').disabled = index === 0;
     document.getElementById('btn-next').disabled = index === lessons.length - 1;
@@ -222,6 +262,8 @@ function showView(viewName) {
 
     if (viewName === 'lesson') {
         document.getElementById('view-lesson').classList.add('active');
+    } else if (viewName === 'microsip') {
+        document.getElementById('view-microsip').classList.add('active');
     } else if (viewName === 'routing') {
         document.getElementById('view-routing').classList.add('active');
     } else if (viewName === 'hardware') {
@@ -255,6 +297,39 @@ async function simulateCall() {
             <em>O controlador Node.js respondeu ao motor Yate: <code>%%>message:ID:true::sip/sip:${data.cleanDest}@${data.gateway}:handled=true</code></em>
         </p>
     `;
+}
+
+let isAudioPlaying = false;
+let audioTimer = null;
+let currentSeconds = 0;
+
+function toggleAudioMock(btn) {
+    const timeLabel = document.getElementById('audio-time');
+    const bars = document.querySelectorAll('.wave-bar');
+
+    if (!isAudioPlaying) {
+        isAudioPlaying = true;
+        btn.innerText = '⏸';
+        btn.style.background = '#10b981';
+        audioTimer = setInterval(() => {
+            currentSeconds++;
+            let mins = Math.floor(currentSeconds / 60).toString().padStart(2, '0');
+            let secs = (currentSeconds % 60).toString().padStart(2, '0');
+            timeLabel.innerText = `${mins}:${secs} / 08:35`;
+
+            // Animação das barrinhas
+            bars.forEach(b => {
+                let randomH = Math.floor(Math.random() * 80) + 20;
+                b.style.height = `${randomH}%`;
+                b.classList.toggle('active', Math.random() > 0.4);
+            });
+        }, 1000);
+    } else {
+        isAudioPlaying = false;
+        btn.innerText = '▶';
+        btn.style.background = '#3b82f6';
+        clearInterval(audioTimer);
+    }
 }
 
 // Inicializa ao carregar

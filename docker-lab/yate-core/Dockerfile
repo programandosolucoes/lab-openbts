@@ -39,6 +39,8 @@ RUN mkdir -p /etc/yate
 COPY config/extmodule.conf /etc/yate/extmodule.conf
 COPY config/ysipchan.conf /etc/yate/ysipchan.conf
 COPY config/yate.conf /etc/yate/yate.conf
+COPY config/regfile.conf /etc/yate/regfile.conf
+COPY config/regexroute.conf /etc/yate/regexroute.conf
 
 EXPOSE 5060/udp 5060/tcp 5039/tcp 16384-16484/udp
 

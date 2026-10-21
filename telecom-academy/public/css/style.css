@@ -205,7 +205,105 @@ body {
     border-color: var(--primary);
 }
 
-/* Content Area */
+/* NotebookLM Style Audio & Slide Player */
+.notebooklm-card {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.9));
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+}
+.notebooklm-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+}
+.notebooklm-badge {
+    background: rgba(168, 85, 247, 0.2);
+    color: #c084fc;
+    border: 1px solid rgba(168, 85, 247, 0.4);
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.audio-player-mock {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: #060911;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 12px 18px;
+    margin-top: 10px;
+}
+.btn-play-pause {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: var(--primary);
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    transition: background 0.2s;
+}
+.btn-play-pause:hover { background: var(--primary-hover); }
+.audio-waveform {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    height: 28px;
+}
+.wave-bar {
+    flex: 1;
+    background: #334155;
+    border-radius: 2px;
+    transition: height 0.2s, background 0.2s;
+}
+.wave-bar.active { background: #38bdf8; }
+
+/* Slides Carousel */
+.slides-box {
+    background: #090e1a;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 24px;
+    margin: 24px 0;
+    position: relative;
+}
+.slide-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #38bdf8;
+    margin-bottom: 12px;
+}
+.slide-bullets {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    color: #cbd5e1;
+    font-size: 0.95rem;
+}
+.slide-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border-color);
+    font-size: 0.82rem;
+    color: var(--text-muted);
+}
 .content-area {
     flex: 1;
     padding: 36px 48px;

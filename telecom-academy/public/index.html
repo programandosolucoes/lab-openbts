@@ -35,6 +35,9 @@
 
             <div class="sidebar-section-title" style="margin-top: 25px;">LABORATÓRIOS & MAPAS</div>
             <nav class="nav-list">
+                <a href="#lab-microsip" class="nav-item special-nav" onclick="showView('microsip')">
+                    <span class="icon">🎧</span> Softphone MicroSIP (Chamadas Reais)
+                </a>
                 <a href="#lab-routing" class="nav-item special-nav" onclick="showView('routing')">
                     <span class="icon">🌍</span> Roteamento Global (3 Países)
                 </a>
@@ -43,6 +46,9 @@
                 </a>
                 <a href="#lab-docker" class="nav-item special-nav" onclick="showView('docker')">
                     <span class="icon">🐳</span> Painel do Docker Lab
+                </a>
+                <a href="/downloads/Engenharia_Telecom_MVNO_Convergente_Carlos_Lopes.epub" class="nav-item special-nav" download style="border-color: #10b981; color: #34d399;">
+                    <span class="icon">📖</span> Baixar Livro EPUB (Carlos Lopes)
                 </a>
             </nav>
         </aside>
@@ -68,6 +74,83 @@
                     <button id="btn-complete" class="btn btn-accent" onclick="markCompleted()">Concluir Módulo ✓</button>
                     <button id="btn-next" class="btn btn-primary" onclick="nextLesson()">Próximo Módulo →</button>
                 </div>
+            </section>
+
+            <!-- View 1.5: Configuração do MicroSIP -->
+            <section id="view-microsip" class="view-panel">
+                <div class="panel-header">
+                    <h2>🎧 Configuração do MicroSIP para Testes de Voz Real</h2>
+                    <p>Registre softphones MicroSIP no seu Windows e disque entre São Paulo, Rio, Miami, Nova York, Lisboa e Porto.</p>
+                </div>
+
+                <div class="alert-box success">
+                    <div class="alert-title">📞 Servidor SIP Local (Yate Core)</div>
+                    <p><strong>Endereço do Servidor (SIP Server / Domain):</strong> <code>127.0.0.1:5060</code> (ou o IP do container <code>172.28.0.20</code>)</p>
+                    <p><strong>Codecs Suportados:</strong> PCMA (G.711a), PCMU (G.711u), GSM, Speex, Opus.</p>
+                </div>
+
+                <table class="table-sip" style="width: 100%; border-collapse: collapse; margin-top: 18px; font-size: 0.92rem;">
+                    <thead>
+                        <tr style="background: #1e293b; color: #fff; text-align: left;">
+                            <th style="padding: 12px; border-bottom: 2px solid #334155;">Ramal</th>
+                            <th style="padding: 12px; border-bottom: 2px solid #334155;">Localização</th>
+                            <th style="padding: 12px; border-bottom: 2px solid #334155;">Usuário / Conta</th>
+                            <th style="padding: 12px; border-bottom: 2px solid #334155;">Senha</th>
+                            <th style="padding: 12px; border-bottom: 2px solid #334155;">Finalidade</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="border-bottom: 1px solid #1e293b;">
+                            <td style="padding: 12px; font-family: monospace; color: #38bdf8;">1101</td>
+                            <td style="padding: 12px;">🇧🇷 São Paulo (SP)</td>
+                            <td style="padding: 12px; font-family: monospace;">1101</td>
+                            <td style="padding: 12px; font-family: monospace; color: #34d399;">SecretSP1101!</td>
+                            <td style="padding: 12px;">Sede Corporativa Brasil</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #1e293b;">
+                            <td style="padding: 12px; font-family: monospace; color: #38bdf8;">2101</td>
+                            <td style="padding: 12px;">🇧🇷 Rio de Janeiro (RJ)</td>
+                            <td style="padding: 12px; font-family: monospace;">2101</td>
+                            <td style="padding: 12px; font-family: monospace; color: #34d399;">SecretRJ2101!</td>
+                            <td style="padding: 12px;">Filial Sudeste</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #1e293b;">
+                            <td style="padding: 12px; font-family: monospace; color: #38bdf8;">3051</td>
+                            <td style="padding: 12px;">🇺🇸 Miami (FL)</td>
+                            <td style="padding: 12px; font-family: monospace;">3051</td>
+                            <td style="padding: 12px; font-family: monospace; color: #34d399;">SecretMIA3051!</td>
+                            <td style="padding: 12px;">POP Internacional Américas</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #1e293b;">
+                            <td style="padding: 12px; font-family: monospace; color: #38bdf8;">2121</td>
+                            <td style="padding: 12px;">🇺🇸 Nova York (NY)</td>
+                            <td style="padding: 12px; font-family: monospace;">2121</td>
+                            <td style="padding: 12px; font-family: monospace; color: #34d399;">SecretNYC2121!</td>
+                            <td style="padding: 12px;">Escritório Comercial EUA</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #1e293b;">
+                            <td style="padding: 12px; font-family: monospace; color: #38bdf8;">3511</td>
+                            <td style="padding: 12px;">🇵🇹 Lisboa</td>
+                            <td style="padding: 12px; font-family: monospace;">3511</td>
+                            <td style="padding: 12px; font-family: monospace; color: #34d399;">SecretLIS3511!</td>
+                            <td style="padding: 12px;">Hub Europeu</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #1e293b;">
+                            <td style="padding: 12px; font-family: monospace; color: #38bdf8;">3512</td>
+                            <td style="padding: 12px;">🇵🇹 Porto</td>
+                            <td style="padding: 12px; font-family: monospace;">3512</td>
+                            <td style="padding: 12px; font-family: monospace; color: #34d399;">SecretOPO3512!</td>
+                            <td style="padding: 12px;">Centro de P&D Europa</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3 style="margin-top: 24px; color: #fff;">Números Especiais de Teste de Bancada</h3>
+                <ul style="margin: 12px 0 0 24px; color: #cbd5e1;">
+                    <li><strong>Disque <code>8001</code> (Teste de Eco):</strong> O Yate atende imediatamente e repete tudo o que você falar no microfone, ideal para medir latência (Jitter/Delay).</li>
+                    <li><strong>Disque <code>8000</code> (Sala de Conferência Global):</strong> Conecta todos os ramais simultaneamente na mesma sala de áudio de alta definição.</li>
+                    <li><strong>Disque <code>8002</code>:</strong> Toca o tom de discagem e verificação de canal.</li>
+                </ul>
             </section>
 
             <!-- View 2: Simulador de Roteamento Global (3 Países x 2 Cidades) -->
