@@ -2,19 +2,19 @@ version: '3.8'
 
 services:
   # -------------------------------------------------------------
-  # 0. PLATAFORMA DE AULAS INTERATIVA (TELECOM ACADEMY - UDEMY STYLE)
+  # 0. PLATAFORMA WEB EAD (OPCIONAL - TELECOM ACADEMY)
   # -------------------------------------------------------------
-  telecom-academy:
-    build:
-      context: ../telecom-academy
-      dockerfile: Dockerfile
-    container_name: telecom-academy
-    restart: unless-stopped
-    ports:
-      - "8080:8080" # Acesse http://localhost:8080
-    networks:
-      telecom_net:
-        ipv4_address: 172.28.0.5
+  # telecom-academy:
+  #   build:
+  #     context: ../telecom-academy
+  #     dockerfile: Dockerfile
+  #   container_name: telecom-academy
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8080:8080" # Acesse http://localhost:8080
+  #   networks:
+  #     telecom_net:
+  #       ipv4_address: 172.28.0.5
 
   # -------------------------------------------------------------
   # 1. BANCO DE DADOS DE SUBSCRIBERS / HSS / UDM (Open5GS)

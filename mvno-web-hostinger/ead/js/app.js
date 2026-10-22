@@ -270,6 +270,7 @@ function loadLesson(index) {
     }
 
     // Atualiza botão de conclusão
+    updateLessonDockerLab(lesson);
     updateCompleteButton();
 }
 
@@ -700,4 +701,349 @@ function simulateCall() {
         '<p><code>' + rota + '</code></p>' +
         '<p><strong>Codec & Mídia:</strong> <code>' + codec + '</code></p>' +
         '</div>';
+}
+
+
+/* ====================================================================
+   SISTEMA DE LEITURA STT (SPEECH-TO-TEXT) E SÍNTESE DE VOZ (TTS)
+   ==================================================================== */
+
+let isSTTInitialized = false;
+let currentHighlightedChapter = null;
+
+function togglePodcastSTT() {
+    const panel = document.getElementById('podcast-stt-panel');
+    const btn = document.getElementById('btn-audio-stt');
+    if (!panel) return;
+
+    if (panel.style.display === 'none' || !panel.style.display) {
+        if (!isSTTInitialized) {
+            initPodcastSTT();
+        }
+        panel.style.display = 'flex';
+        if (btn) btn.textContent = '✕ Ocultar Transcrição';
+        try {
+            panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } catch (e) {}
+    } else {
+        panel.style.display = 'none';
+        if (btn) btn.textContent = '📄 Ler Transcrição (STT)';
+    }
+}
+
+function initPodcastSTT() {
+    renderPodcastSTT('');
+    isSTTInitialized = true;
+
+    // Sincroniza destaque visual do capítulo com a reprodução do áudio
+    const audio = document.getElementById('lesson-audio');
+    if (audio) {
+        audio.addEventListener('timeupdate', syncSTTWithAudio);
+    }
+}
+
+function renderPodcastSTT(filterTerm) {
+    const container = document.getElementById('stt-chapters-container');
+    if (!container || typeof PODCAST_STT_CHAPTERS === 'undefined') return;
+
+    const term = (filterTerm || '').toLowerCase().trim();
+    let html = '';
+
+    PODCAST_STT_CHAPTERS.forEach(function(chap) {
+        let matchesSearch = true;
+        let paragraphsHtml = '';
+
+        if (term) {
+            const inTitle = chap.title.toLowerCase().includes(term);
+            const matchingParas = chap.paragraphs.filter(function(p) { return p.toLowerCase().includes(term); });
+            matchesSearch = inTitle || matchingParas.length > 0;
+
+            if (matchesSearch) {
+                paragraphsHtml = chap.paragraphs.map(function(p) {
+                    if (p.toLowerCase().includes(term)) {
+                        const regex = new RegExp('(' + escapeRegExp(term) + ')', 'gi');
+                        const highlighted = p.replace(regex, '<mark>$1</mark>');
+                        return '<p class="stt-paragraph">' + highlighted + '</p>';
+                    }
+                    return '<p class="stt-paragraph">' + p + '</p>';
+                }).join('');
+            }
+        } else {
+            paragraphsHtml = chap.paragraphs.map(function(p) {
+                return '<p class="stt-paragraph">' + p + '</p>';
+            }).join('');
+        }
+
+        if (matchesSearch) {
+            html += '<div class="stt-chapter-card" id="stt-card-' + chap.id + '">' +
+                '<div class="stt-chapter-head">' +
+                '<button class="timestamp-pill" onclick="seekAudioTime(' + chap.timeSec + ')" title="Saltar para este minuto no áudio">' +
+                '▶ ' + chap.timeLabel +
+                '</button>' +
+                '<h4 class="stt-chapter-title">' + chap.title + '</h4>' +
+                '</div>' +
+                paragraphsHtml +
+                '</div>';
+        }
+    });
+
+    if (!html) {
+        html = '<div style="padding: 24px; text-align: center; color: var(--text-muted); font-size: 13px;">Nenhum trecho encontrado para a busca "' + escapeHtml(term) + '".</div>';
+    }
+
+    container.innerHTML = html;
+}
+
+function filterPodcastSTT() {
+    const input = document.getElementById('stt-search-input');
+    const term = input ? input.value : '';
+    renderPodcastSTT(term);
+}
+
+function seekAudioTime(secs) {
+    const audio = document.getElementById('lesson-audio');
+    if (!audio) return;
+
+    audio.currentTime = secs;
+    startAudioPlayback();
+
+    // Destaque visual
+    highlightSTTChapterByTime(secs);
+}
+
+function syncSTTWithAudio() {
+    const audio = document.getElementById('lesson-audio');
+    if (!audio || typeof PODCAST_STT_CHAPTERS === 'undefined') return;
+
+    const curTime = audio.currentTime;
+    let activeChap = null;
+
+    for (let i = PODCAST_STT_CHAPTERS.length - 1; i >= 0; i--) {
+        if (curTime >= PODCAST_STT_CHAPTERS[i].timeSec) {
+            activeChap = PODCAST_STT_CHAPTERS[i];
+            break;
+        }
+    }
+
+    if (activeChap && activeChap.id !== currentHighlightedChapter) {
+        currentHighlightedChapter = activeChap.id;
+        document.querySelectorAll('.stt-chapter-card').forEach(function(card) {
+            card.classList.remove('highlight');
+        });
+        const activeCard = document.getElementById('stt-card-' + activeChap.id);
+        if (activeCard) {
+            activeCard.classList.add('highlight');
+        }
+    }
+}
+
+function highlightSTTChapterByTime(secs) {
+    if (typeof PODCAST_STT_CHAPTERS === 'undefined') return;
+    let chap = PODCAST_STT_CHAPTERS[0];
+    for (let i = PODCAST_STT_CHAPTERS.length - 1; i >= 0; i--) {
+        if (secs >= PODCAST_STT_CHAPTERS[i].timeSec) {
+            chap = PODCAST_STT_CHAPTERS[i];
+            break;
+        }
+    }
+    if (chap) {
+        document.querySelectorAll('.stt-chapter-card').forEach(function(c) {
+            c.classList.remove('highlight');
+        });
+        const card = document.getElementById('stt-card-' + chap.id);
+        if (card) {
+            card.classList.add('highlight');
+            try {
+                card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            } catch (e) {}
+        }
+    }
+}
+
+function copyPodcastSTT() {
+    if (typeof PODCAST_STT_CHAPTERS === 'undefined') return;
+    let fullText = '=== TRANSCRIÇÃO INTEGRAL STT: TELECOM ACADEMY PRO ===\n\n';
+    PODCAST_STT_CHAPTERS.forEach(function(chap) {
+        fullText += '[' + chap.timeLabel + '] ' + chap.title + '\n';
+        chap.paragraphs.forEach(function(p) {
+            fullText += p + '\n\n';
+        });
+    });
+
+    navigator.clipboard.writeText(fullText).then(function() {
+        const copyBtn = document.querySelector('.btn-copy-stt');
+        if (copyBtn) {
+            const original = copyBtn.textContent;
+            copyBtn.textContent = '✓ Copiado!';
+            copyBtn.style.borderColor = 'var(--accent)';
+            copyBtn.style.color = 'var(--accent)';
+            setTimeout(function() {
+                copyBtn.textContent = original;
+                copyBtn.style.borderColor = '';
+                copyBtn.style.color = '';
+            }, 2500);
+        }
+    }).catch(function(err) {
+        console.error('Falha ao copiar:', err);
+    });
+}
+
+function toggleSlideTTS() {
+    if ('speechSynthesis' in window) {
+        if (window.speechSynthesis.speaking) {
+            window.speechSynthesis.cancel();
+            updateTTSButtonState(false);
+            return;
+        }
+        speakCurrentSlide();
+    } else {
+        alert('Seu navegador não possui suporte nativo à síntese de voz (Web Speech API). Utilize a leitura do texto dos slides.');
+    }
+}
+
+function speakCurrentSlide() {
+    if (!('speechSynthesis' in window)) return;
+
+    window.speechSynthesis.cancel();
+
+    const lesson = allLessons[currentLessonIndex];
+    if (!lesson || !lesson.slides || !lesson.slides[currentSlideIndex]) return;
+
+    const slide = lesson.slides[currentSlideIndex];
+    const textToSpeak = slide.speakerNotes || (slide.title + '. ' + slide.subtitle);
+
+    const utterance = new SpeechSynthesisUtterance(textToSpeak);
+    utterance.lang = 'pt-BR';
+    utterance.rate = 1.05;
+
+    const voices = window.speechSynthesis.getVoices();
+    const ptVoice = voices.find(function(v) { return v.lang.startsWith('pt'); });
+    if (ptVoice) utterance.voice = ptVoice;
+
+    utterance.onstart = function() {
+        updateTTSButtonState(true);
+    };
+
+    utterance.onend = function() {
+        updateTTSButtonState(false);
+    };
+
+    utterance.onerror = function() {
+        updateTTSButtonState(false);
+    };
+
+    window.speechSynthesis.speak(utterance);
+}
+
+function updateTTSButtonState(isSpeaking) {
+    const btn = document.getElementById('btn-slide-tts');
+    if (!btn) return;
+
+    if (isSpeaking) {
+        btn.textContent = '⏸ Pausar Narração';
+        btn.classList.add('speaking');
+    } else {
+        btn.textContent = '🔊 Ouvir Narração';
+        btn.classList.remove('speaking');
+    }
+}
+
+function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function escapeHtml(string) {
+    const div = document.createElement('div');
+    div.textContent = string;
+    return div.innerHTML;
+}
+
+
+/**
+ * ====================================================================
+ * DOCKER LAB & EXERCICIOS MAO NA MASSA
+ * ====================================================================
+ */
+
+function updateLessonDockerLab(lesson) {
+    if (!lesson) return;
+    
+    const labData = (typeof LESSON_DOCKER_LABS !== 'undefined') ? LESSON_DOCKER_LABS[lesson.id] : null;
+
+    const titleEl = document.getElementById('docker-lesson-title');
+    const goalEl = document.getElementById('docker-lesson-goal');
+    const cmdEl = document.getElementById('docker-lesson-cmd');
+    const stepsEl = document.getElementById('docker-lesson-steps');
+    const exerciseEl = document.getElementById('docker-lesson-exercise');
+    const expectedEl = document.getElementById('docker-lesson-expected');
+    const tipEl = document.getElementById('docker-lesson-tip');
+
+    if (labData) {
+        if (titleEl) titleEl.textContent = lesson.id + ' — ' + labData.title;
+        if (goalEl) goalEl.textContent = labData.goal;
+        if (cmdEl) cmdEl.textContent = labData.dockerCmd;
+        
+        if (stepsEl) {
+            stepsEl.innerHTML = '';
+            if (Array.isArray(labData.steps)) {
+                labData.steps.forEach(function(step) {
+                    const li = document.createElement('li');
+                    li.textContent = step;
+                    stepsEl.appendChild(li);
+                });
+            }
+        }
+
+        if (exerciseEl) exerciseEl.textContent = labData.exercise;
+        if (expectedEl) expectedEl.textContent = labData.expectedOutput;
+        if (tipEl) tipEl.textContent = labData.quickTip;
+    } else {
+        if (titleEl) titleEl.textContent = lesson.id + ' — Laboratorio Pratico Confinado';
+        if (goalEl) goalEl.textContent = 'Suba os containers do laboratorio Docker para testar na pratica os conceitos desta aula.';
+        if (cmdEl) cmdEl.textContent = 'docker compose up -d';
+        if (stepsEl) {
+            stepsEl.innerHTML = '<li>Abra o terminal na pasta docker-lab.</li><li>Execute: docker compose up -d.</li><li>Acesse a WebUI em http://localhost:9999.</li>';
+        }
+        if (exerciseEl) exerciseEl.textContent = 'Inicie os containers e verifique com docker compose ps.';
+        if (expectedEl) expectedEl.textContent = 'Todos os servicos de telecom operando normalmente em background.';
+        if (tipEl) tipEl.textContent = 'Consulte o arquivo COMO_SUBIR_O_LABORATORIO.md na pasta do projeto.';
+    }
+}
+
+function copyDockerCmd(button) {
+    const cmdEl = document.getElementById('docker-lesson-cmd');
+    if (!cmdEl) return;
+    const text = cmdEl.textContent.trim();
+    
+    navigator.clipboard.writeText(text).then(function() {
+        const originalText = button.innerHTML;
+        button.innerHTML = '✅ Copiado!';
+        button.style.background = 'var(--accent)';
+        button.style.color = '#ffffff';
+        setTimeout(function() {
+            button.innerHTML = originalText;
+            button.style.background = '';
+            button.style.color = '';
+        }, 2000);
+    }).catch(function(err) {
+        console.warn('Erro ao copiar comando:', err);
+    });
+}
+
+function copyGitCloneCommand(button) {
+    const text = 'git clone https://github.com/programandosolucoes/lab-openbts.git';
+    
+    navigator.clipboard.writeText(text).then(function() {
+        const originalText = button.innerHTML;
+        button.innerHTML = '✅ Copiado!';
+        button.style.background = 'var(--accent)';
+        button.style.color = '#ffffff';
+        setTimeout(function() {
+            button.innerHTML = originalText;
+            button.style.background = '';
+            button.style.color = '';
+        }, 2000);
+    }).catch(function(err) {
+        console.warn('Erro ao copiar comando Git:', err);
+    });
 }

@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Telecom Academy — Formação Completa em Redes Móveis, Open5GS, Yate, OpenBTS & MVNO</title>
-    <link rel="stylesheet" href="css/style.css?v=20261022_v11">
-    <link rel="stylesheet" href="css/katex.min.css?v=20261022_v11">
+    <link rel="stylesheet" href="css/style.css?v=20261022_v13">
+    <link rel="stylesheet" href="css/katex.min.css?v=20261022_v13">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -24,6 +24,8 @@
         <div class="header-right">
             <button id="btn-theme-toggle" class="btn-theme-toggle" onclick="toggleTheme()" title="Alternar entre modo Claro e Escuro">☀️ Modo Claro</button>
             <a href="../" class="btn-portal">← Portal Principal</a>
+            <a href="downloads/lab-telecom-docker.zip" class="btn-epub" style="background:#0284c7;margin-right:8px;font-weight:700" download title="Baixar Pacote Completo do Laboratório Docker">📦 Baixar Docker (.zip)</a>
+            <a href="https://github.com/programandosolucoes/lab-openbts" target="_blank" rel="noopener noreferrer" class="btn-epub" style="background:#1e293b;margin-right:8px;border:1px solid rgba(255,255,255,0.2)" title="Ver Repositório no GitHub">🐙 GitHub</a>
             <a href="downloads/LIVRO_MESTRE_ENGENHARIA_MVNO_CONVERGENTE_2026.md" class="btn-epub" style="background:#1e3a8a;margin-right:8px" download>📖 Livro Mestre (MD)</a>
             <a href="downloads/Engenharia_Telecom_MVNO_Convergente_Carlos_Lopes.epub" class="btn-epub" download>📥 Livro EPUB</a>
             <div class="progress-box">
@@ -79,7 +81,10 @@
                         </ul>
                     </div>
                     <div class="speaker-notes-box">
-                        <strong>🎙️ Notas Técnicas do Instrutor / Destaques da Aula:</strong>
+                        <div class="speaker-notes-header">
+                            <strong>🎙️ Transcrição Técnica do Instrutor (STT do Slide):</strong>
+                            <button id="btn-slide-tts" class="btn-slide-tts" onclick="toggleSlideTTS()" title="Ouvir narração deste slide via síntese de voz">🔊 Ouvir Narração</button>
+                        </div>
                         <p id="speaker-notes-text">Carregando notas da aula...</p>
                     </div>
                 </div>
@@ -96,7 +101,27 @@
                     <div class="audio-controls">
                         <audio id="lesson-audio" src="audio/nb_telecom_mvno_2026.m4a?v=20261022_nlm" preload="metadata"></audio>
                         <button id="btn-audio-play" class="btn-audio" onclick="toggleAudio()">▶ Ouvir Aula</button>
+                        <button id="btn-audio-stt" class="btn-audio-stt" onclick="togglePodcastSTT()" title="Abrir transcrição completa do áudio em texto">📄 Ler Transcrição (STT)</button>
                         <span id="audio-time" class="audio-time">00:00 / 25:57</span>
+                    </div>
+                </div>
+
+                <!-- Painel Expansível de Transcrição Speech-To-Text (STT) -->
+                <div id="podcast-stt-panel" class="podcast-stt-panel" style="display: none;">
+                    <div class="stt-header">
+                        <div class="stt-title-area">
+                            <span class="stt-badge">STT • TRANSCRIÇÃO DE ÁUDIO</span>
+                            <h3>Transcrição Integral do Podcast de Telecomunicações</h3>
+                            <span class="stt-meta">25m57s • 8 Capítulos Indexados • Clique no timestamp para saltar no áudio</span>
+                        </div>
+                        <div class="stt-actions">
+                            <input type="text" id="stt-search-input" placeholder="🔍 Filtrar termos na transcrição..." oninput="filterPodcastSTT()">
+                            <button class="btn-copy-stt" onclick="copyPodcastSTT()">📋 Copiar Texto</button>
+                            <button class="btn-close-stt" onclick="togglePodcastSTT()">✕ Fechar</button>
+                        </div>
+                    </div>
+                    <div id="stt-chapters-container" class="stt-chapters-container">
+                        <!-- Preenchido dinamicamente via JS a partir de PODCAST_STT_CHAPTERS -->
                     </div>
                 </div>
             </section>
@@ -104,6 +129,7 @@
             <!-- 2. Barra de Abas de Conteúdo Didático -->
             <div class="content-tabs-bar">
                 <button class="tab-btn active" data-tab="theory" onclick="switchMainTab('theory')">📖 Teoria & Fundamentos</button>
+                <button class="tab-btn" data-tab="dockerlab" onclick="switchMainTab('dockerlab')">🧪 Laboratório Docker & Mão na Massa</button>
                 <button class="tab-btn" data-tab="config" onclick="switchMainTab('config')">⚙️ Configurações Software a Software</button>
                 <button class="tab-btn" data-tab="wireshark" onclick="switchMainTab('wireshark')">🦈 Wireshark & Protocolos</button>
                 <button class="tab-btn" data-tab="diagrams" onclick="switchMainTab('diagrams')">🗺️ Diagramas de Rede & Bancada</button>
@@ -125,6 +151,134 @@
                 </div>
 
                 <!-- Aba 2: Software por Software -->
+                
+                <!-- Aba 2: Laboratório Docker & Mão na Massa -->
+                <div id="tab-dockerlab" class="tab-pane">
+                    <!-- Banner de Ações Rápidas: Download Zip & GitHub -->
+                    <div class="dockerlab-actions-banner">
+                        <div class="dockerlab-actions-info">
+                            <span class="docker-badge-chip">🚀 AMBIENTE CONTEINERIZADO PRONTO</span>
+                            <h2>Laboratório Prático de Telecomunicações & MVNO (Docker)</h2>
+                            <p>Suba na sua máquina todo o ecossistema de redes móveis (Core 4G/5G Open5GS, Painel WebUI de Chips, Yate PBX, Asterisk e Simulador UERANSIM) sem complicações e sem precisar de hardware caro.</p>
+                        </div>
+                        <div class="dockerlab-actions-buttons">
+                            <a href="downloads/lab-telecom-docker.zip" class="btn-docker-download" download title="Baixar arquivo zip com docker-compose e configurações">
+                                <span class="btn-icon">📦</span>
+                                <div class="btn-text-block">
+                                    <span class="btn-main-text">Baixar Pacote Docker (.ZIP)</span>
+                                    <span class="btn-sub-text">Versão Pronta para Uso (~10 KB)</span>
+                                </div>
+                            </a>
+                            <a href="https://github.com/programandosolucoes/lab-openbts" target="_blank" rel="noopener noreferrer" class="btn-docker-github" title="Acessar o repositório aberto no GitHub">
+                                <span class="btn-icon">🐙</span>
+                                <div class="btn-text-block">
+                                    <span class="btn-main-text">Ver no GitHub</span>
+                                    <span class="btn-sub-text">lab-openbts (branch main)</span>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Git Clone Box -->
+                    <div class="git-clone-card">
+                        <div class="git-clone-header">
+                            <span class="terminal-dot red"></span>
+                            <span class="terminal-dot yellow"></span>
+                            <span class="terminal-dot green"></span>
+                            <span class="git-clone-title">Clonar repositório completo via Git:</span>
+                        </div>
+                        <div class="git-clone-body">
+                            <code>git clone https://github.com/programandosolucoes/lab-openbts.git</code>
+                            <button class="btn-copy-clone" onclick="copyGitCloneCommand(this)">📋 Copiar Comando</button>
+                        </div>
+                    </div>
+
+                    <!-- Grid de Acessos Rápidos do Laboratório -->
+                    <div class="lab-services-grid">
+                        <div class="service-card">
+                            <div class="service-icon">🌐</div>
+                            <div class="service-details">
+                                <h3>Open5GS WebUI</h3>
+                                <p>Gestão visual de SIM Cards, IMSI, chaves K/OPc e planos APN.</p>
+                                <span class="service-port">http://localhost:9999</span>
+                                <span class="service-auth">Login: <strong>admin</strong> | Senha: <strong>1423</strong></span>
+                            </div>
+                        </div>
+                        <div class="service-card">
+                            <div class="service-icon">📡</div>
+                            <div class="service-details">
+                                <h3>Open5GS 4G/5G Core</h3>
+                                <p>MME, SGW, PGW, HSS, PCRF, SMF e UPF prontos para sinalização celular.</p>
+                                <span class="service-port">36412 (SCTP) | 2152 (GTP-U)</span>
+                                <span class="service-auth">Daemon: <strong>open5gs-core</strong></span>
+                            </div>
+                        </div>
+                        <div class="service-card">
+                            <div class="service-icon">📞</div>
+                            <div class="service-details">
+                                <h3>Yate Telephony & PBX</h3>
+                                <p>Roteamento de voz, troncos SIP, sinalização GSM e controlador Node.js.</p>
+                                <span class="service-port">localhost:5060 (SIP)</span>
+                                <span class="service-auth">Ramal: <strong>1001</strong> | Senha: <strong>1001</strong></span>
+                            </div>
+                        </div>
+                        <div class="service-card">
+                            <div class="service-icon">🚀</div>
+                            <div class="service-details">
+                                <h3>UERANSIM (Simulador 5G)</h3>
+                                <p>Antena gNodeB e smartphone simulados via software sem placa SDR.</p>
+                                <span class="service-port">Container CLI</span>
+                                <span class="service-auth">Modo: <strong>100% Virtual</strong></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Guia Mão na Massa Contextual da Aula Ativa -->
+                    <div class="lesson-handson-box">
+                        <div class="handson-header">
+                            <div class="handson-badge">🧪 EXERCÍCIO MÃO NA MASSA DA AULA ATIVA</div>
+                            <h2 id="docker-lesson-title">Carregando exercício da aula...</h2>
+                            <p id="docker-lesson-goal">Objetivo prático...</p>
+                        </div>
+
+                        <!-- Card de Comando Docker a Executar -->
+                        <div class="docker-cmd-banner">
+                            <span class="cmd-label">💻 O que rodar no Terminal para esta aula:</span>
+                            <div class="cmd-code-row">
+                                <code id="docker-lesson-cmd">docker compose up -d</code>
+                                <button class="btn-copy-cmd" onclick="copyDockerCmd(this)">📋 Copiar</button>
+                            </div>
+                        </div>
+
+                        <!-- Passos Práticos Mão na Massa -->
+                        <div class="handson-steps-section">
+                            <h3>👣 Passo a Passo Prático (Descomplicado)</h3>
+                            <ol id="docker-lesson-steps" class="handson-steps-list">
+                                <!-- Preenchido dinamicamente pelo JS -->
+                            </ol>
+                        </div>
+
+                        <!-- Desafio / Exercício Guiado -->
+                        <div class="handson-challenge-card">
+                            <div class="challenge-badge">🎯 DESAFIO DE FIXAÇÃO / EXERCÍCIO</div>
+                            <p id="docker-lesson-exercise">Descrição do desafio...</p>
+                            <div class="expected-output-box">
+                                <span class="expected-label">✅ O que você deve ver na tela/log (Resultado Esperado):</span>
+                                <div id="docker-lesson-expected" class="expected-content">Log ou tela esperada...</div>
+                            </div>
+                        </div>
+
+                        <!-- Dica Amiga -->
+                        <div class="quick-tip-card">
+                            <span class="tip-icon">💡</span>
+                            <div class="tip-content">
+                                <strong>Dica Rápida do Especialista:</strong>
+                                <p id="docker-lesson-tip">Dica útil...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div id="tab-config" class="tab-pane">
                     <div class="config-header">
                         <h2 id="config-software-title">Configuração do Software</h2>
@@ -154,7 +308,7 @@
                             <h2 id="active-diagram-title" style="font-size: 18px; color: var(--text-primary); font-weight: 700;">⚡ Bancada de RF Confinada (Atenuação 60 dB)</h2>
                             <p id="active-diagram-desc" style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">Isolamento de RF e conformidade estrita com o Art. 183 da LGT e Resolução Anatel nº 777/2025.</p>
                         </div>
-                        <a id="active-diagram-link" href="img/diagrama-bancada-rf.svg?v=20261022_v11" target="_blank" class="btn btn-secondary" style="font-size: 12px; padding: 6px 14px; text-decoration: none;">🔍 Abrir Vetorial em Nova Aba</a>
+                        <a id="active-diagram-link" href="img/diagrama-bancada-rf.svg?v=20261022_v13" target="_blank" class="btn btn-secondary" style="font-size: 12px; padding: 6px 14px; text-decoration: none;">🔍 Abrir Vetorial em Nova Aba</a>
                     </div>
                     <div class="diagram-switcher">
                         <button class="diag-btn active" onclick="switchDiagram('bancada')">⚡ Bancada de RF Confinada (60 dB)</button>
@@ -164,7 +318,7 @@
                         <button class="diag-btn" onclick="switchDiagram('global')">🌍 Topologia Global (3 Países)</button>
                     </div>
                     <div class="diagram-viewport" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; box-shadow: var(--shadow-sm); overflow: auto; text-align: center;">
-                        <img id="active-diagram-img" src="img/diagrama-bancada-rf.svg?v=20261022_v11" alt="Diagrama de Telecom" style="max-width: 100%; height: auto; border-radius: 8px; display: inline-block;">
+                        <img id="active-diagram-img" src="img/diagrama-bancada-rf.svg?v=20261022_v13" alt="Diagrama de Telecom" style="max-width: 100%; height: auto; border-radius: 8px; display: inline-block;">
                     </div>
                 </div>
 
@@ -297,11 +451,13 @@
     </div>
 
     <!-- Bibliotecas de Renderização Markdown e KaTeX -->
-    <script src="js/marked.min.js?v=20261022_v11"></script>
-    <script src="js/katex.min.js?v=20261022_v11"></script>
-    <script src="js/auto-render.min.js?v=20261022_v11"></script>
-    <!-- Scripts de Lógica e Curriculo com Cache Busting -->
-    <script src="js/curriculum.js?v=20261022_v11"></script>
-    <script src="js/app.js?v=20261022_v11"></script>
+    <script src="js/marked.min.js?v=20261022_v13"></script>
+    <script src="js/katex.min.js?v=20261022_v13"></script>
+    <script src="js/auto-render.min.js?v=20261022_v13"></script>
+    <!-- Scripts de Lógica, Transcrição STT e Curriculo com Cache Busting -->
+    <script src="js/podcast-transcript.js?v=20261022_v13"></script>
+    <script src="js/lab-exercises.js?v=20261022_v13"></script>
+    <script src="js/curriculum.js?v=20261022_v13"></script>
+    <script src="js/app.js?v=20261022_v13"></script>
 </body>
 </html>
