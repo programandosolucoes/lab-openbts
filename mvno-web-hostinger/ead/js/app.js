@@ -17,8 +17,46 @@ let audioTimer = null;
 let audioSecondsElapsed = 0;
 let currentUtterance = null;
 
+// Gerenciamento de Tema (Dark / Light)
+function initTheme() {
+    let savedTheme = 'dark';
+    try {
+        savedTheme = localStorage.getItem('telecom_theme') || 'dark';
+    } catch (e) {}
+    setTheme(savedTheme, false);
+}
+
+function setTheme(theme, save) {
+    if (save === undefined) save = true;
+    const toggleBtn = document.getElementById('btn-theme-toggle');
+    if (theme === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+        if (toggleBtn) {
+            toggleBtn.innerHTML = '🌙 Modo Escuro';
+            toggleBtn.setAttribute('title', 'Alternar para Modo Escuro');
+        }
+    } else {
+        document.documentElement.removeAttribute('data-theme');
+        if (toggleBtn) {
+            toggleBtn.innerHTML = '☀️ Modo Claro';
+            toggleBtn.setAttribute('title', 'Alternar para Modo Claro');
+        }
+    }
+    if (save) {
+        try {
+            localStorage.setItem('telecom_theme', theme);
+        } catch (e) {}
+    }
+}
+
+function toggleTheme() {
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    setTheme(isLight ? 'dark' : 'light', true);
+}
+
 // Inicialização ao carregar o DOM
 document.addEventListener('DOMContentLoaded', function() {
+    initTheme();
     initCurriculum();
     renderSidebar();
     loadLesson(0);
@@ -146,9 +184,37 @@ function loadLesson(index) {
     const tagEl = document.getElementById('player-lesson-tag');
     if (tagEl) tagEl.textContent = lesson.id + ' • ' + lesson.tag.toUpperCase();
 
-    // Atualiza Teoria
+    // Atualiza Teoria com Markdown e KaTeX
     const theoryEl = document.getElementById('active-lesson-theory');
-    if (theoryEl) theoryEl.innerHTML = lesson.theoryText || lesson.theory || "";
+    if (theoryEl) {
+        const rawTheory = lesson.theoryText || lesson.theory || "";
+        if (typeof marked !== 'undefined' && marked.parse) {
+            marked.setOptions({
+                gfm: true,
+                breaks: true
+            });
+            theoryEl.innerHTML = marked.parse(rawTheory);
+        } else {
+            theoryEl.innerHTML = rawTheory;
+        }
+
+        // Renderiza equações matemáticas KaTeX
+        if (typeof renderMathInElement === 'function') {
+            try {
+                renderMathInElement(theoryEl, {
+                    delimiters: [
+                        { left: '$$', right: '$$', display: true },
+                        { left: '$', right: '$', display: false },
+                        { left: '\\(', right: '\\)', display: false },
+                        { left: '\\[', right: '\\]', display: true }
+                    ],
+                    throwOnError: false
+                });
+            } catch (err) {
+                console.warn('Erro ao processar KaTeX:', err);
+            }
+        }
+    }
 
     // Atualiza Configuração de Software
     if (lesson.softwareConfig) {

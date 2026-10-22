@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Telecom Academy — Formação Completa em Redes Móveis, Open5GS, Yate, OpenBTS & MVNO</title>
-    <link rel="stylesheet" href="css/style.css?v=20261021_v2">
+    <link rel="stylesheet" href="css/style.css?v=20261022_v9">
+    <link rel="stylesheet" href="css/katex.min.css?v=20261022_v9">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -21,6 +22,7 @@
             <input type="text" id="curriculum-search" placeholder="🔍 Pesquisar aulas, comandos, RFCs e protocolos..." oninput="filterLessons()">
         </div>
         <div class="header-right">
+            <button id="btn-theme-toggle" class="btn-theme-toggle" onclick="toggleTheme()" title="Alternar entre modo Claro e Escuro">☀️ Modo Claro</button>
             <a href="../" class="btn-portal">← Portal Principal</a>
             <a href="downloads/LIVRO_MESTRE_ENGENHARIA_MVNO_CONVERGENTE_2026.md" class="btn-epub" style="background:#1e3a8a;margin-right:8px" download>📖 Livro Mestre (MD)</a>
             <a href="downloads/Engenharia_Telecom_MVNO_Convergente_Carlos_Lopes.epub" class="btn-epub" download>📥 Livro EPUB</a>
@@ -287,8 +289,12 @@
         </main>
     </div>
 
+    <!-- Bibliotecas de Renderização Markdown e KaTeX -->
+    <script src="js/marked.min.js?v=20261022_v9"></script>
+    <script src="js/katex.min.js?v=20261022_v9"></script>
+    <script src="js/auto-render.min.js?v=20261022_v9"></script>
     <!-- Scripts de Lógica e Curriculo com Cache Busting -->
-    <script src="js/curriculum.js?v=20261022_v8"></script>
-    <script src="js/app.js?v=20261022_v8"></script>
+    <script src="js/curriculum.js?v=20261022_v9"></script>
+    <script src="js/app.js?v=20261022_v9"></script>
 </body>
 </html>
