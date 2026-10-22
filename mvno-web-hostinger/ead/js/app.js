@@ -268,7 +268,7 @@ function nextLesson() {
         loadLesson(currentLessonIndex + 1);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
-        alert('🎉 Parabéns! Você concluiu todas as 24 aulas do curso Telecom Academy. Faça o download do seu livro oficial na aba de encerramento!');
+        alert('🎉 Parabéns! Você concluiu todas as ' + allLessons.length + ' aulas da formação Telecom Academy Pro. Faça o download do seu livro oficial na aba de encerramento!');
     }
 }
 
@@ -331,7 +331,7 @@ function updateProgressBar() {
     const fill = document.getElementById('progress-fill');
     if (!text || !fill) return;
 
-    const total = allLessons.length || 24;
+    const total = allLessons.length || 32;
     const completed = completedLessons.size;
     const pct = Math.round((completed / total) * 100);
 
