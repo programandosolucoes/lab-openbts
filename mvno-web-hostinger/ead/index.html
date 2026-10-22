@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Telecom Academy — Formação Completa em Redes Móveis, Open5GS, Yate, OpenBTS & MVNO</title>
-    <link rel="stylesheet" href="css/style.css?v=20261022_v10">
-    <link rel="stylesheet" href="css/katex.min.css?v=20261022_v10">
+    <link rel="stylesheet" href="css/style.css?v=20261022_v11">
+    <link rel="stylesheet" href="css/katex.min.css?v=20261022_v11">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -149,6 +149,13 @@
 
                 <!-- Aba 4: Diagramas de Rede & Bancada -->
                 <div id="tab-diagrams" class="tab-pane">
+                    <div class="diagram-header" style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                        <div>
+                            <h2 id="active-diagram-title" style="font-size: 18px; color: var(--text-primary); font-weight: 700;">⚡ Bancada de RF Confinada (Atenuação 60 dB)</h2>
+                            <p id="active-diagram-desc" style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">Isolamento de RF e conformidade estrita com o Art. 183 da LGT e Resolução Anatel nº 777/2025.</p>
+                        </div>
+                        <a id="active-diagram-link" href="img/diagrama-bancada-rf.svg?v=20261022_v11" target="_blank" class="btn btn-secondary" style="font-size: 12px; padding: 6px 14px; text-decoration: none;">🔍 Abrir Vetorial em Nova Aba</a>
+                    </div>
                     <div class="diagram-switcher">
                         <button class="diag-btn active" onclick="switchDiagram('bancada')">⚡ Bancada de RF Confinada (60 dB)</button>
                         <button class="diag-btn" onclick="switchDiagram('brasil')">🇧🇷 Topologia Brasil (SP ↔ RJ)</button>
@@ -156,8 +163,8 @@
                         <button class="diag-btn" onclick="switchDiagram('portugal')">🇵🇹 Topologia Portugal (Lisboa ↔ Porto)</button>
                         <button class="diag-btn" onclick="switchDiagram('global')">🌍 Topologia Global (3 Países)</button>
                     </div>
-                    <div class="diagram-viewport">
-                        <img id="active-diagram-img" src="img/diagrama-bancada-rf.svg" alt="Diagrama de Telecom" style="width: 100%; height: auto; border-radius: 8px;">
+                    <div class="diagram-viewport" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; box-shadow: var(--shadow-sm); overflow: auto; text-align: center;">
+                        <img id="active-diagram-img" src="img/diagrama-bancada-rf.svg?v=20261022_v11" alt="Diagrama de Telecom" style="max-width: 100%; height: auto; border-radius: 8px; display: inline-block;">
                     </div>
                 </div>
 
@@ -290,11 +297,11 @@
     </div>
 
     <!-- Bibliotecas de Renderização Markdown e KaTeX -->
-    <script src="js/marked.min.js?v=20261022_v10"></script>
-    <script src="js/katex.min.js?v=20261022_v10"></script>
-    <script src="js/auto-render.min.js?v=20261022_v10"></script>
+    <script src="js/marked.min.js?v=20261022_v11"></script>
+    <script src="js/katex.min.js?v=20261022_v11"></script>
+    <script src="js/auto-render.min.js?v=20261022_v11"></script>
     <!-- Scripts de Lógica e Curriculo com Cache Busting -->
-    <script src="js/curriculum.js?v=20261022_v10"></script>
-    <script src="js/app.js?v=20261022_v10"></script>
+    <script src="js/curriculum.js?v=20261022_v11"></script>
+    <script src="js/app.js?v=20261022_v11"></script>
 </body>
 </html>

@@ -1,4 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="100%" height="100%">
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600">
   <defs>
     <linearGradient id="bgPT" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#1c130e"/>
@@ -33,7 +34,7 @@
     <rect x="25" y="55" width="370" height="85" rx="6" fill="#1e293b" stroke="#f87171"/>
     <text x="40" y="78" fill="#f87171" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="700">Yate Core SBC Lisboa (IP: 10.35.1.1)</text>
     <text x="40" y="98" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="11">Roteamento E.164: +351 21 XXX XXXX (Local)</text>
-    <text x="40" y="118" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="11">Interconexão ANACOM & Trânsito Europeu IP</text>
+    <text x="40" y="118" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="11">Interconexão ANACOM e Trânsito Europeu IP</text>
 
     <!-- Asterisk Lisboa -->
     <rect x="25" y="155" width="370" height="85" rx="6" fill="#1e293b" stroke="#ef4444"/>
@@ -43,7 +44,7 @@
 
     <!-- Open5GS Lisboa -->
     <rect x="25" y="255" width="370" height="85" rx="6" fill="#1e293b" stroke="#b91c1c"/>
-    <text x="40" y="278" fill="#f87171" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="700">Open5GS UPF & Euro Core Edge</text>
+    <text x="40" y="278" fill="#f87171" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="700">Open5GS UPF e Euro Core Edge</text>
     <text x="40" y="298" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="11">Roaming Europeu (Regulamento Roam Like at Home)</text>
     <text x="40" y="318" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="11">SCTP 38412 para amarração de antenas 5G SA</text>
 

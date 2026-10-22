@@ -1,4 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="100%" height="100%">
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600">
   <defs>
     <linearGradient id="bgBR" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#0b1329"/>
@@ -19,7 +20,7 @@
   <!-- Título -->
   <g transform="translate(40, 40)">
     <text x="0" y="0" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-size="20" font-weight="700">TOPOLOGIA REGIONAL BRASIL: SÃO PAULO (11) ↔ RIO DE JANEIRO (21)</text>
-    <text x="0" y="24" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="13">Roteamento Least Cost Routing (LCR) • Túnel SIP Cifrado Privado • Convergência Celular MVNO & PABX Nuvem</text>
+    <text x="0" y="24" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="13">Roteamento Least Cost Routing (LCR) • Túnel SIP Cifrado Privado • Convergência Celular MVNO e PABX Nuvem</text>
   </g>
 
   <!-- POP SÃO PAULO (DDD 11) -->
@@ -75,7 +76,7 @@
 
     <!-- Core 5G / UPF RJ -->
     <rect x="25" y="255" width="370" height="85" rx="6" fill="#1e293b" stroke="#059669"/>
-    <text x="40" y="278" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="700">Edge UPF & gNodeB RJ (UERANSIM)</text>
+    <text x="40" y="278" fill="#34d399" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="700">Edge UPF e gNodeB RJ (UERANSIM)</text>
     <text x="40" y="298" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="11">Plano de Usuário Distribuído de Baixa Latência</text>
     <text x="40" y="318" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="11">SCTP 38412 ligado ao Core Central</text>
 

@@ -425,8 +425,46 @@ function switchMainTab(tabName) {
     const targetPane = document.getElementById('tab-' + tabName);
     if (targetPane) {
         targetPane.classList.add('active');
+        try {
+            targetPane.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } catch (e) {}
     }
 }
+
+const DIAGRAM_ALIASES = {
+    'all-ip-ngn': 'bancada',
+    'regulatory-mesh': 'brasil',
+    'attenuator-budget': 'bancada',
+    'sdr-hardware-chain': 'bancada',
+    'openbts-architecture': 'bancada',
+    'gsm-authentication-flow': 'bancada',
+    'smqueue-sms-flow': 'bancada',
+    'yate-message-bus': 'bancada',
+    'yate-lcr-routing': 'brasil',
+    'extmodule-flow': 'bancada',
+    'yateucn-unified-core': 'global',
+    'lte-epc-architecture': 'brasil',
+    'lte-ofdm-grid': 'bancada',
+    'lte-bearer-hierarchy': 'brasil',
+    'gtpu-packet-encapsulation': 'global',
+    '5g-sba-architecture': 'brasil',
+    '5g-aka-milenage': 'bancada',
+    'ueransim-pdu-flow': 'brasil',
+    '5g-network-slicing': 'global',
+    'asterisk-pjsip-objects': 'brasil',
+    'e164-lcr-routing': 'brasil',
+    'cellular-sip-call': 'brasil',
+    'wireguard-global-mesh': 'global',
+    'transcontinental-failover': 'global',
+    'audio-codec-comparison': 'eua',
+    'itu-g107-emodel': 'eua',
+    'adaptive-jitter-buffer': 'portugal',
+    'traffic-kpis-asr-ner': 'portugal',
+    'bss-oss-architecture': 'global',
+    'diameter-charging-flow': 'global',
+    'microsip-provisioning': 'global',
+    'master-audit-summary': 'global'
+};
 
 function switchDiagram(type) {
     const img = document.getElementById('active-diagram-img');
@@ -435,16 +473,50 @@ function switchDiagram(type) {
 
     buttons.forEach(function(btn) { btn.classList.remove('active'); });
 
+    const key = DIAGRAM_ALIASES[type] || type || 'bancada';
+
     const map = {
-        'bancada': { file: 'img/diagrama-bancada-rf.svg', idx: 0 },
-        'brasil': { file: 'img/diagrama-brasil.svg', idx: 1 },
-        'eua': { file: 'img/diagrama-eua.svg', idx: 2 },
-        'portugal': { file: 'img/diagrama-portugal.svg', idx: 3 },
-        'global': { file: 'img/diagrama-global.svg', idx: 4 }
+        'bancada': { 
+            file: 'img/diagrama-bancada-rf.svg?v=20261022_v11', 
+            idx: 0,
+            title: '⚡ Bancada de RF Confinada (Atenuação 60 dB)',
+            desc: 'Isolamento de RF e conformidade estrita com o Art. 183 da LGT e Resolução Anatel nº 777/2025.'
+        },
+        'brasil': { 
+            file: 'img/diagrama-brasil.svg?v=20261022_v11', 
+            idx: 1,
+            title: '🇧🇷 Topologia Brasil (São Paulo 11 ↔ Rio de Janeiro 21)',
+            desc: 'Roteamento Least Cost Routing (LCR), túnel SIP PJSIP com TLS/SRTP e convergência celular Open5GS.'
+        },
+        'eua': { 
+            file: 'img/diagrama-eua.svg?v=20261022_v11', 
+            idx: 2,
+            title: '🇺🇸 Topologia Estados Unidos (Miami FL ↔ Nova York NY)',
+            desc: 'Gateway SIP intercontinental, tratamento E.164 NANP (+1) e redundância de Core HSS/UDM.'
+        },
+        'portugal': { 
+            file: 'img/diagrama-portugal.svg?v=20261022_v11', 
+            idx: 3,
+            title: '🇵🇹 Topologia Portugal (Lisboa ↔ Porto)',
+            desc: 'Interconexão regulatória ANACOM, Core 5G SA edge e trânsito IP europeu de alta fidelidade.'
+        },
+        'global': { 
+            file: 'img/diagrama-global.svg?v=20261022_v11', 
+            idx: 4,
+            title: '🌍 Topologia Global Convergente (Brasil, EUA & Portugal)',
+            desc: 'Malha global de 3 países e 6 cidades interconectada por túneis WireGuard com failover automático e LCR.'
+        }
     };
 
-    const target = map[type] || map['bancada'];
+    const target = map[key] || map['bancada'];
     img.src = target.file;
+
+    const diagTitle = document.getElementById('active-diagram-title');
+    const diagDesc = document.getElementById('active-diagram-desc');
+    const diagLink = document.getElementById('active-diagram-link');
+    if (diagTitle) diagTitle.textContent = target.title;
+    if (diagDesc) diagDesc.textContent = target.desc;
+    if (diagLink) diagLink.href = target.file;
 
     if (buttons[target.idx]) {
         buttons[target.idx].classList.add('active');
