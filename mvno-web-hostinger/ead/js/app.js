@@ -417,7 +417,7 @@ function initAudioEvents() {
 
     audio.addEventListener('timeupdate', function() {
         const cur = formatTime(audio.currentTime);
-        const dur = formatTime(audio.duration || 840);
+        const dur = formatTime(audio.duration || 1557);
         if (timeDisplay) timeDisplay.textContent = cur + ' / ' + dur;
     });
 
@@ -470,7 +470,7 @@ function updateAudioTimeDisplay() {
     if (!timeDisplay) return;
 
     const cur = formatTime(audioSecondsElapsed);
-    timeDisplay.textContent = cur + ' / 14:00';
+    timeDisplay.textContent = cur + ' / 25:57';
 }
 
 function formatTime(secs) {
