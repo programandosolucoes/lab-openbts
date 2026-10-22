@@ -3,7 +3,7 @@
 **Autoria & Compilação Curricular:** Carlos Alberto Lopes & Prof. Angelo de Barros Delphini  
 **Instituição:** Programando Soluções • OSTS Telecom • Telecom Academy  
 **Marco Regulatório:** Resolução Anatel nº 777/2025 • Artigo 183 da Lei 9.472/1997 (LGT)  
-**Fontes e Referências Oficiais Cruzadas no Google NotebookLM Studio:**
+**Fontes e Referências Oficiais Cruzadas no Laboratório Avançado de Síntese de Telecomunicações:**
 - *Range Networks* (David Burgess, Harvind Samra e Michael Iedema) — *Getting Started with OpenBTS* & *OpenBTS Application Suite*
 - *Understanding LTE and its Performance* (Tara Ali-Yahiya) — Padronização 3GPP Rel. 8 a 17
 - *OpenBTS for Dummies* (Publicação Oficial de Comunicações Abertas)

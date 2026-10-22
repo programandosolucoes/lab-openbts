@@ -27,8 +27,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function initCurriculum() {
     allLessons = [];
-    if (typeof courseCurriculum !== 'undefined' && courseCurriculum.modules) {
-        courseCurriculum.modules.forEach(function(mod) {
+    const curr = (typeof courseCurriculum !== 'undefined' && courseCurriculum.modules) ? courseCurriculum : (typeof CURRICULUM !== 'undefined' ? { modules: CURRICULUM } : null);
+    if (curr && curr.modules) {
+        curr.modules.forEach(function(mod) {
             mod.lessons.forEach(function(lesson) {
                 allLessons.push({
                     ...lesson,
@@ -52,11 +53,12 @@ function initCurriculum() {
 
 function renderSidebar() {
     const accordion = document.getElementById('module-accordion');
-    if (!accordion || typeof courseCurriculum === 'undefined') return;
+    const curr = (typeof courseCurriculum !== 'undefined' && courseCurriculum.modules) ? courseCurriculum : (typeof CURRICULUM !== 'undefined' ? { modules: CURRICULUM } : null);
+    if (!accordion || !curr || !curr.modules) return;
 
     accordion.innerHTML = '';
 
-    courseCurriculum.modules.forEach(function(mod, modIdx) {
+    curr.modules.forEach(function(mod, modIdx) {
         const modCard = document.createElement('div');
         modCard.className = 'module-card';
         modCard.id = 'mod-card-' + mod.id;
@@ -146,7 +148,7 @@ function loadLesson(index) {
 
     // Atualiza Teoria
     const theoryEl = document.getElementById('active-lesson-theory');
-    if (theoryEl) theoryEl.innerHTML = lesson.theoryText;
+    if (theoryEl) theoryEl.innerHTML = lesson.theoryText || lesson.theory || "";
 
     // Atualiza Configuração de Software
     if (lesson.softwareConfig) {
@@ -400,14 +402,14 @@ function filterLessons() {
 
         const match = l.title.toLowerCase().includes(query) ||
                       l.tag.toLowerCase().includes(query) ||
-                      (l.theoryText && l.theoryText.toLowerCase().includes(query));
+                      ((l.theoryText || l.theory) && ((l.theoryText || l.theory).toLowerCase().includes(query)));
 
         item.style.display = match ? 'flex' : 'none';
     });
 }
 
 // -------------------------------------------------------------
-// REPRODUTOR DE ÁUDIO OFICIAL (NotebookLM Studio Podcast M4A)
+// REPRODUTOR DE ÁUDIO OFICIAL (Podcast de Telecomunicações M4A)
 // -------------------------------------------------------------
 function initAudioEvents() {
     const audio = document.getElementById('lesson-audio');
